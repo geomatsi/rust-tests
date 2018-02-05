@@ -14,7 +14,14 @@ fn main() {
 		let mut guess = String::new();
 		io::stdin().read_line(&mut guess).expect("failed to read line");
 
-		let guess: u32 = guess.trim().parse().expect("need a number...");
+		let guess: u32 = match guess.trim().parse() {
+			Ok(num) => num,
+			Err(_) => {
+				println!("incorrect input, try again...");
+				continue;
+			}
+		};
+
 		println!("guess: {}", guess);
 
 		match guess.cmp(&secret) {
