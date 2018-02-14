@@ -1,9 +1,20 @@
 #[derive(Debug)]
+enum SpectralClass {
+	O,
+	B,
+	A,
+	F,
+	G,
+	K,
+	M,
+}
 
+#[derive(Debug)]
 struct Star {
-	name: String,	// star type
-	stype: String,	// spectral type
-	mass: f32,	// solar mass
+	name: String,		// star type
+	class: SpectralClass,	// spectral type
+	subclass: u8,		// spectral sub-type
+	mass: f32,		// solar mass
 }
 
 impl Star {
@@ -19,10 +30,11 @@ impl Star {
 	}
 
 	// associated function, not method: no self in params
-	fn new_star(name: &str, stype: &str, mass: f32) -> Star {
+	fn new_star(name: &str, class: SpectralClass, subclass: u8, mass: f32) -> Star {
 		Star {
 			name: String::from(name),
-			stype: String::from(stype),
+			class: class,
+			subclass: subclass,
 			mass: mass,
 		}
 	}
@@ -31,13 +43,14 @@ impl Star {
 fn main() {
 	let sun = Star {
 		name: String::from("Sun"),
-		stype: String::from("G2"),
+		class: SpectralClass::G,
+		subclass: 2,
 		mass: 1.0,
 	};
 
-	let sirius = Star::new_star("Sirius", "A1", 2.0);
-	let fomalhaut = Star::new_star("Fomalhaut", "A3", 1.92);
-	let zeta_puppis = Star::new_star("Zeta Puppis", "O4", 56.1);
+	let sirius = Star::new_star("Sirius", SpectralClass::A, 1, 2.0);
+	let fomalhaut = Star::new_star("Fomalhaut", SpectralClass::A, 3, 1.92);
+	let zeta_puppis = Star::new_star("Zeta Puppis", SpectralClass::O, 4, 56.1);
 
 	println!("Sirius mass: {} kg", sirius.mass_kg());
 	println!("Fomalhaut mass: {} kg", fomalhaut.mass_kg());
