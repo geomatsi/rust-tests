@@ -2,9 +2,9 @@
 //
 //
 
-mod star;
+extern crate structure;
 
-use star::*;
+use structure::star::*;
 
 fn main() {
 	let sun = Star::get_sun();
