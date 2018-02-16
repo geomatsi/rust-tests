@@ -1,11 +1,11 @@
 // public
 pub fn a_pub() -> String {
-	a_priv();
+    a_priv();
 
-	String::from("a pub")
+    String::from("a pub")
 }
 
 // private
 fn a_priv() {
-	println!("Test a priv");
+    println!("Test a priv");
 }
