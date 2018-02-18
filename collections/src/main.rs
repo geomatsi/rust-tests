@@ -1,7 +1,16 @@
+use std::collections::HashMap;
+
 #[derive(Debug)]
 enum MixedType {
     IVar(i32),
     FVar(f32),
+}
+
+#[derive(Debug)]
+enum TestResult {
+    Skip,
+    Pass,
+    Fail,
 }
 
 fn main() {
@@ -56,7 +65,93 @@ fn main() {
                 &MixedType::FVar(s) => {
                     println!("v3: {} -> float {}", e, s);
                 }
+            },
+        }
+    }
+
+    // hash maps
+    let mut tests = HashMap::new();
+
+    tests.insert(String::from("Test01"), TestResult::Pass);
+    tests.insert(String::from("Test02"), TestResult::Fail);
+
+    let t = String::from("Test03");
+    tests.insert(t, TestResult::Pass);
+    // t is no more valid here, its ownership now belongs to 'tests'
+
+    let query = vec!["Test01", "Test02", "Test03", "Test04"];
+
+    for tc in query {
+        let res = tests.get(tc);
+        match res {
+            None => {
+                println!("Test {} not run", tc);
             }
+            Some(s) => {
+                println!("Test {} -> {:?}", tc, s);
+            }
+        }
+    }
+
+    test_report("Report #1", &tests);
+
+    // overwrite prev
+    tests.insert(String::from("Test01"), TestResult::Fail);
+    test_report("Report #2", &tests);
+
+    // insert new if no such key
+    tests
+        .entry(String::from("Test01"))
+        .or_insert(TestResult::Skip);
+    tests
+        .entry(String::from("Test02"))
+        .or_insert(TestResult::Skip);
+    tests
+        .entry(String::from("Test03"))
+        .or_insert(TestResult::Skip);
+    tests
+        .entry(String::from("Test04"))
+        .or_insert(TestResult::Skip);
+    tests
+        .entry(String::from("Test05"))
+        .or_insert(TestResult::Skip);
+    test_report("Report #3", &tests);
+
+    // update
+    let data = vec!["Test01", "Test02", "Test03", "Test04", "Tests05", "Tests06"];
+    for tc in data {
+        let res = tests.entry(String::from(tc)).or_insert(TestResult::Skip);
+        match *res {
+            TestResult::Fail => *res = TestResult::Skip,
+            TestResult::Pass => *res = TestResult::Skip,
+            _ => {}
+        }
+    }
+
+    test_report("Report #4", &tests);
+
+    // update all
+    test_set_all(&mut tests, &TestResult::Pass);
+    test_report("Report #5", &tests);
+
+    // update all
+    test_set_all(&mut tests, &TestResult::Skip);
+    test_report("Report #6", &tests);
+}
+
+fn test_report(n: &str, m: &HashMap<String, TestResult>) {
+    println!("------ {} ------", n);
+    for (k, v) in m {
+        println!("Test {}: {:?}", k, v);
+    }
+}
+
+fn test_set_all(m: &mut HashMap<String, TestResult>, r: &TestResult) {
+    for (_, v) in m.iter_mut() {
+        match r {
+            &TestResult::Pass => *v = TestResult::Pass,
+            &TestResult::Fail => *v = TestResult::Fail,
+            &TestResult::Skip => *v = TestResult::Skip,
         }
     }
 }
