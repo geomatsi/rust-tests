@@ -11,6 +11,61 @@ fn main() {
     let s1 = String::from("need to replace spaces");
     let s2 = f_replace(&s, ' ', '_');
     println!("{} -> {}", s1, s2);
+
+    // concat options
+    let s1 = String::from("one");
+    let s2 = String::from("two");
+    let s3 = String::from("three");
+
+    // can't use since s1 will be 'moved':
+    //let s = s1 + &s2 + &s3;
+
+    // format doesn't take ownership of its params:
+    let s = format!("{}-{}-{}", s1, s2, s3);
+    println!("{} {} {} {}", s, s1, s2, s3);
+
+    // UTF-8 !!!
+    let se = String::from("hello");
+    let sr = String::from("Салют");
+
+    // crash! not at UTF-8 symbol boundary:
+    //let ss = &sr[0..1];
+
+    println!("{} : len {}", se, se.len());
+    println!("{} : len {}", sr, sr.len());
+
+    f_dump_as_chars(&sr);
+    f_dump_as_bytes(&sr);
+}
+
+// dump string chars
+fn f_dump_as_chars(s: &String) {
+    let mut t = String::new();
+
+    for c in s.chars() {
+        if t.len() == 0 {
+            t = format!("{}", c);
+        } else {
+            t = format!("{}-{}", t, c);
+        }
+    }
+
+    println!("{}", t);
+}
+
+// dump string bytes
+fn f_dump_as_bytes(s: &String) {
+    let mut t = String::new();
+
+    for c in s.bytes() {
+        if t.len() == 0 {
+            t = format!("{}", c);
+        } else {
+            t = format!("{}-{}", t, c);
+        }
+    }
+
+    println!("{}", t);
 }
 
 // f_hdist(s1, s2)
