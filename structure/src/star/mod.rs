@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 #[derive(Debug)]
 pub enum SpectralClass {
     O(u8),
@@ -79,6 +81,31 @@ impl Star {
             name: String::from("Sun"),
             class: SpectralClass::G(2),
             mass: 1.0,
+        }
+    }
+
+    pub fn mass_cmp(s1: &Star, s2: &Star) -> Ordering {
+        match s1.mass.partial_cmp(&s2.mass) {
+            Some(res) => res,
+            None => Ordering::Less,
+        }
+    }
+
+    pub fn class_cmp(s1: &Star, s2: &Star) -> Ordering {
+        let v1 = Star::s2n(s1);
+        let v2 = Star::s2n(s2);
+        v1.cmp(&v2)
+    }
+
+    fn s2n(s: &Star) -> u32 {
+        match s.class {
+            SpectralClass::O(v) => 256 * 6 + u32::from(v),
+            SpectralClass::B(v) => 256 * 5 + u32::from(v),
+            SpectralClass::A(v) => 256 * 4 + u32::from(v),
+            SpectralClass::F(v) => 256 * 3 + u32::from(v),
+            SpectralClass::G(v) => 256 * 2 + u32::from(v),
+            SpectralClass::K(v) => 256 * 1 + u32::from(v),
+            SpectralClass::M(v) => 256 * 0 + u32::from(v),
         }
     }
 }
