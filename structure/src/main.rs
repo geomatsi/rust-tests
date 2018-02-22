@@ -6,6 +6,8 @@ extern crate structure;
 
 use structure::star::*;
 
+use std::io;
+
 fn main() {
     let mut sky: Vec<Star> = Vec::new();
     let sun: Star = Star::get_sun();
@@ -60,5 +62,30 @@ fn main() {
     sky.sort_by(Star::class_cmp);
     for s in &sky {
         println!("{}", s.name);
+    }
+
+    loop {
+        let mut name = String::new();
+
+        for s in &sky {
+            println!("{}", s.name);
+        }
+
+        println!("Input start name to get info or 'exit':");
+        let len = match io::stdin().read_line(&mut name) {
+            Ok(s) => s,
+            Err(e) => panic!("input error: {:?}", e),
+        };
+
+        if name.trim().eq("exit") {
+            break;
+        }
+
+        for s in &sky {
+            if name.trim().eq(&s.name) {
+                println!("{:#?}", s);
+                break;
+            }
+        }
     }
 }
