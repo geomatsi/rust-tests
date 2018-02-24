@@ -64,28 +64,34 @@ fn main() {
         println!("{}", s.name);
     }
 
+    cmd_line_loop(&sky).expect("failure");
+}
+
+fn cmd_line_loop(sky: &Vec<Star>) -> Result<u32, io::Error> {
     loop {
         let mut name = String::new();
 
-        for s in &sky {
+        for s in sky {
             println!("{}", s.name);
         }
 
         println!("Input start name to get info or 'exit':");
-        let len = match io::stdin().read_line(&mut name) {
+        let _ = match io::stdin().read_line(&mut name) {
             Ok(s) => s,
-            Err(e) => panic!("input error: {:?}", e),
+            Err(e) => return Err(e),
         };
 
         if name.trim().eq("exit") {
             break;
         }
 
-        for s in &sky {
+        for s in sky {
             if name.trim().eq(&s.name) {
                 println!("{:#?}", s);
                 break;
             }
         }
     }
+
+    return Ok(0);
 }
