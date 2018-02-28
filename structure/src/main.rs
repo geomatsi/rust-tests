@@ -39,7 +39,7 @@ fn main() {
     }
 
     for s in &sky {
-        println!("Star: {:#?}", s);
+        println!("Star: {}", s);
     }
 
     for s in &sky {
@@ -61,7 +61,7 @@ fn main() {
     println!("Compare by spectral class:");
     sky.sort_by(Star::class_cmp);
     for s in &sky {
-        println!("{}", s.name);
+        println!("{} {}", s.name, Star::obj_spectral(s));
     }
 
     cmd_line_loop(&sky).expect("failure");
@@ -87,7 +87,7 @@ fn cmd_line_loop(sky: &Vec<Star>) -> Result<u32, io::Error> {
 
         for s in sky {
             if name.trim().eq(&s.name) {
-                println!("{:#?}", s);
+                println!("----> {}", s);
                 break;
             }
         }

@@ -1,6 +1,6 @@
+use std::fmt;
 use std::cmp::Ordering;
 
-#[derive(Debug)]
 pub enum SpectralClass {
     O(u8),
     B(u8),
@@ -11,11 +11,43 @@ pub enum SpectralClass {
     M(u8),
 }
 
-#[derive(Debug)]
 pub struct Star {
     pub name: String,     // star name
     class: SpectralClass, // spectral type
     mass: f32,            // solar mass
+}
+
+pub trait Spectral {
+    fn spectral(&self) -> String {
+        String::from("undefined")
+    }
+}
+
+// traits
+impl fmt::Display for SpectralClass {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            &SpectralClass::O(s) => write!(f, "O({})", s),
+            &SpectralClass::B(s) => write!(f, "B({})", s),
+            &SpectralClass::A(s) => write!(f, "A({})", s),
+            &SpectralClass::F(s) => write!(f, "F({})", s),
+            &SpectralClass::G(s) => write!(f, "G({})", s),
+            &SpectralClass::K(s) => write!(f, "K({})", s),
+            &SpectralClass::M(s) => write!(f, "M({})", s),
+        }
+    }
+}
+
+impl Spectral for Star {
+    fn spectral(&self) -> String {
+        format!("{}", self.class)
+    }
+}
+
+impl fmt::Display for Star {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}:{}:{}K", self.name, self.spectral(), self.get_temp())
+    }
 }
 
 // methods
@@ -107,5 +139,9 @@ impl Star {
             SpectralClass::K(v) => 256 * 1 + u32::from(v),
             SpectralClass::M(v) => 256 * 0 + u32::from(v),
         }
+    }
+
+    pub fn obj_spectral<T: Spectral>(o: &T) -> String {
+        format!("{}", o.spectral())
     }
 }
