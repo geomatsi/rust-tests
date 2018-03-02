@@ -145,3 +145,34 @@ impl Star {
         format!("{}", o.spectral())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_color() {
+        let s1 = Star::new_star("n1", SpectralClass::O(1), 1.0);
+        let s2 = Star::new_star("n2", SpectralClass::B(1), 1.0);
+        let s3 = Star::new_star("n3", SpectralClass::A(1), 1.0);
+        let s4 = Star::new_star("n4", SpectralClass::F(1), 1.0);
+        let s5 = Star::new_star("n5", SpectralClass::G(1), 1.0);
+        let s6 = Star::new_star("n6", SpectralClass::K(1), 1.0);
+
+        assert_eq!(s1.get_color().to_lowercase(), "blue");
+        assert_eq!(s2.get_color().to_lowercase(), "blue");
+        assert_eq!(s3.get_color().to_lowercase(), "white");
+        assert_eq!(s4.get_color().to_lowercase(), "yellow");
+        assert_eq!(s5.get_color().to_lowercase(), "yellow");
+        assert_eq!(s6.get_color().to_lowercase(), "red");
+    }
+
+    #[test]
+    fn test_blue_giant() {
+        let s1 = Star::new_star("n1", SpectralClass::O(1), 1.0);
+        let s2 = Star::new_star("n2", SpectralClass::B(1), 1.0);
+
+        assert!(s1.is_blue_giant());
+        assert!(!s2.is_blue_giant());
+    }
+}
