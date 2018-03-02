@@ -175,4 +175,13 @@ mod tests {
         assert!(s1.is_blue_giant());
         assert!(!s2.is_blue_giant());
     }
+
+    #[test]
+    fn test_priv_internals() {
+        let s1 = Star::new_star("n1", SpectralClass::O(1), 1.0);
+        let s2 = Star::new_star("n2", SpectralClass::M(1), 1.0);
+
+        assert_eq!(Star::s2n(&s1), 256 * 6 + 1);
+        assert_eq!(Star::s2n(&s2), 256 * 0 + 1);
+    }
 }
