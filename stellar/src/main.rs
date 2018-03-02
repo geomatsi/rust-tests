@@ -2,9 +2,9 @@
 //
 //
 
-extern crate structure;
+extern crate stellar;
 
-use structure::star::*;
+use stellar::star::*;
 
 use std::io;
 
