@@ -1,0 +1,6 @@
+[package]
+name = "scratch-board"
+version = "0.1.0"
+authors = ["Sergey Matyukevich <geomatsi@gmail.com>"]
+
+[dependencies]
