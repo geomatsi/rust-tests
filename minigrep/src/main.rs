@@ -6,17 +6,26 @@ fn main() {
     let args: Vec<String> = env::args().collect();
     println!("{:?}", args);
 
-    let (query, fname) = parse_config(&args);
-    println!("file '{}' query '{}'", query, fname);
+    let config = parse_config(&args);
+    println!("config '{:?}'", config);
+
+    let mut fh = File::open(config.fname).expect("file not found");
+    let mut text = String::new();
+    fh.read_to_string(&mut text).expect("failed to read from file");
 }
 
-fn parse_config(args: &[String]) -> (&str, &str) {
+#[derive(Debug)]
+struct Config {
+    query: String,
+    fname: String,
+}
+
+fn parse_config(args: &[String]) -> Config {
     let q = &args[1];
     let f = &args[2];
 
-    return (f, q);
+    Config {
+        fname: f.clone(),
+        query: q.clone(),
+    }
 }
-
-//let mut fh = File::open(fname).expect("file not found");
-//let mut text = String::new();
-//fh.read_to_string(&mut text).expect("failed to read from file");
