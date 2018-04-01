@@ -1,11 +1,17 @@
+use std::fmt;
 use std::fs::File;
 use std::error::Error;
 use std::io::prelude::*;
 
-#[derive(Debug)]
 pub struct Config {
     pub query: String,
     pub fname: String,
+}
+
+impl fmt::Display for Config {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}:{}", self.fname, self.query)
+    }
 }
 
 impl Config {

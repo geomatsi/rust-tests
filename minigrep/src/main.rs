@@ -13,7 +13,7 @@ fn main() {
         println!("make config error: {}", err);
         process::exit(1);
     });
-    println!("config '{:?}'", config);
+    println!("config '{}'", config);
 
     if let Err(e) = minigrep::run(config) {
         println!("run config error: {}", e);
