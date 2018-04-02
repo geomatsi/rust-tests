@@ -38,3 +38,43 @@ pub fn run(config: Config) -> Result<(), Box<Error>> {
 
     Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[should_panic(expected = "not enough arguments")]
+    fn test_config_err1() {
+        Config::new(&[]).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "not enough arguments")]
+    fn test_config_err2() {
+        let a = String::from("a");
+
+        Config::new(&[a]).unwrap();
+    }
+
+    #[test]
+    #[should_panic(expected = "not enough arguments")]
+    fn test_config_err3() {
+        let a = String::from("a");
+        let b = String::from("b");
+
+        Config::new(&[a, b]).unwrap();
+    }
+
+    #[test]
+    fn  test_config_ok1() {
+        let a = String::from("a");
+        let b = String::from("b");
+        let c = String::from("c");
+
+        let t = Config::new(&[a, b, c]).unwrap();
+
+        assert_eq!(t.query, "b");
+        assert_eq!(t.fname, "c");
+    }
+}
