@@ -36,11 +36,23 @@ pub fn run(config: Config) -> Result<(), Box<Error>> {
 
     fh.read_to_string(&mut text)?;
 
+    for line in search(&config.query, &text) {
+        println!("{}", line);
+    }
+
     Ok(())
 }
 
-pub fn search<'a>(_query: &str, _data: &'a str) -> Vec<&'a str> {
-    vec![]
+pub fn search<'a>(query: &str, data: &'a str) -> Vec<&'a str> {
+    let mut results = Vec::new();
+
+    for line in data.lines() {
+        if line.contains(query) {
+            results.push(line);
+        }
+    }
+
+    results
 }
 
 #[cfg(test)]
@@ -83,10 +95,18 @@ mod tests {
     }
 
     #[test]
-    fn test_res1() {
-        let q = "help";
-        let t = "hello world"; 
+    fn test_search1() {
+        let q = "a";
+        let t = "b"; 
 
-        assert_eq!(vec!["boo"], search(q, t));
+        assert_eq!(0, search(q, t).len());
+    }
+
+    #[test]
+    fn test_search2() {
+        let q = "a";
+        let t = "a b c"; 
+
+        assert_eq!(vec!["a b c"], search(q, t));
     }
 }
