@@ -39,6 +39,10 @@ pub fn run(config: Config) -> Result<(), Box<Error>> {
     Ok(())
 }
 
+pub fn search<'a>(_query: &str, _data: &'a str) -> Vec<&'a str> {
+    vec![]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -76,5 +80,13 @@ mod tests {
 
         assert_eq!(t.query, "b");
         assert_eq!(t.fname, "c");
+    }
+
+    #[test]
+    fn test_res1() {
+        let q = "help";
+        let t = "hello world"; 
+
+        assert_eq!(vec!["boo"], search(q, t));
     }
 }
