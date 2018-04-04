@@ -109,4 +109,13 @@ mod tests {
 
         assert_eq!(vec!["a b c"], search(q, t));
     }
+
+    #[test]
+    fn test_search3() {
+        let q = "a";
+        let t = "a
+                 b c"; 
+
+        assert_eq!(vec!["a"], search(q, t));
+    }
 }
