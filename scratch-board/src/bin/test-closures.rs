@@ -1,5 +1,6 @@
 extern crate rand;
 
+use std::io;
 use rand::Rng;
 use std::thread;
 use std::time::Duration;
@@ -25,7 +26,15 @@ fn sim_generate_workout(intensity: u32) {
 }
 
 fn main() {
-    println!(">>>>> Closure examples");
+    let mut input = String::new();
 
-    sim_generate_workout(10, 7);
+    println!("Input workout intensity:");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("failed to read line");
+
+    let intensity: u32 =
+        input.trim().parse().expect("failed to parse input");
+
+    sim_generate_workout(intensity);
 }
