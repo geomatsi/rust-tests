@@ -1,8 +1,11 @@
+extern crate rand;
+
+use rand::Rng;
 use std::thread;
 use std::time::Duration;
 
-
-fn sim_generate_workout(intensity: u32, rand: u32) {
+fn sim_generate_workout(intensity: u32) {
+    let rand = rand::thread_rng().gen_range(1, 8);
 
     let opt_res = |num: u32| -> u32 {
         println!("slow calculation...");
