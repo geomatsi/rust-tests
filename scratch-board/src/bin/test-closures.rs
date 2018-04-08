@@ -4,7 +4,7 @@ use std::time::Duration;
 
 fn sim_generate_workout(intensity: u32, rand: u32) {
 
-    let opt_res = |num| {
+    let opt_res = |num: u32| -> u32 {
         println!("slow calculation...");
         thread::sleep(Duration::from_secs(2));
         num
