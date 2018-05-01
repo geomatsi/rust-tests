@@ -49,15 +49,7 @@ pub fn run(config: Config) -> Result<(), Box<Error>> {
 }
 
 pub fn search<'a>(query: &str, data: &'a str) -> Vec<&'a str> {
-    let mut results = Vec::new();
-
-    for line in data.lines() {
-        if line.contains(query) {
-            results.push(line);
-        }
-    }
-
-    results
+    data.lines().filter(|line| line.contains(query)).collect()
 }
 
 #[cfg(test)]
