@@ -15,8 +15,11 @@ impl fmt::Display for Config {
 }
 
 impl Config {
-    pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
-        args.next();    // skip arg[0]
+    pub fn new<I>(mut args: I) -> Result<Config, &'static str>
+    where
+        I: Iterator<Item = String>,
+    {
+        args.next(); // skip arg[0]
 
         let q = match args.next() {
             Some(arg) => arg,
@@ -28,10 +31,7 @@ impl Config {
             None => return Err("Missing filename..."),
         };
 
-        Ok(Config {
-            fname: f,
-            query: q,
-        })
+        Ok(Config { fname: f, query: q })
     }
 }
 
@@ -57,35 +57,37 @@ mod tests {
     use super::*;
 
     #[test]
-    #[should_panic(expected = "not enough arguments")]
+    #[should_panic(expected = "Missing query string...")]
     fn test_config_err1() {
-        Config::new(&[]).unwrap();
+        let v = std::iter::empty::<String>();
+
+        Config::new(v).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "not enough arguments")]
+    #[should_panic(expected = "Missing query string...")]
     fn test_config_err2() {
         let a = String::from("a");
 
-        Config::new(&[a]).unwrap();
+        Config::new(vec![a].into_iter()).unwrap();
     }
 
     #[test]
-    #[should_panic(expected = "not enough arguments")]
+    #[should_panic(expected = "Missing filename...")]
     fn test_config_err3() {
         let a = String::from("a");
         let b = String::from("b");
 
-        Config::new(&[a, b]).unwrap();
+        Config::new(vec![a, b].into_iter()).unwrap();
     }
 
     #[test]
-    fn  test_config_ok1() {
+    fn test_config_ok1() {
         let a = String::from("a");
         let b = String::from("b");
         let c = String::from("c");
 
-        let t = Config::new(&[a, b, c]).unwrap();
+        let t = Config::new(vec![a, b, c].into_iter()).unwrap();
 
         assert_eq!(t.query, "b");
         assert_eq!(t.fname, "c");
@@ -94,7 +96,7 @@ mod tests {
     #[test]
     fn test_search1() {
         let q = "a";
-        let t = "b"; 
+        let t = "b";
 
         assert_eq!(0, search(q, t).len());
     }
@@ -102,7 +104,7 @@ mod tests {
     #[test]
     fn test_search2() {
         let q = "a";
-        let t = "a b c"; 
+        let t = "a b c";
 
         assert_eq!(vec!["a b c"], search(q, t));
     }
@@ -111,7 +113,7 @@ mod tests {
     fn test_search3() {
         let q = "a";
         let t = "a
-                 b c"; 
+                 b c";
 
         assert_eq!(vec!["a"], search(q, t));
     }
