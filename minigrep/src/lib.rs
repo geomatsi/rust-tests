@@ -15,17 +15,22 @@ impl fmt::Display for Config {
 }
 
 impl Config {
-    pub fn new(args: &[String]) -> Result<Config, &'static str> {
-        if args.len() < 3 {
-            return Err("not enough arguments");
-        }
+    pub fn new(mut args: std::env::Args) -> Result<Config, &'static str> {
+        args.next();    // skip arg[0]
 
-        let q = &args[1];
-        let f = &args[2];
+        let q = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Missing query string..."),
+        };
+
+        let f = match args.next() {
+            Some(arg) => arg,
+            None => return Err("Missing filename..."),
+        };
 
         Ok(Config {
-            fname: f.clone(),
-            query: q.clone(),
+            fname: f,
+            query: q,
         })
     }
 }
