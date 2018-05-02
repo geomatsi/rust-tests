@@ -112,7 +112,7 @@ fn main() {
         println!("counter values: {}", s);
     }
 
-    for s in c.clone().map(|x| x*x).filter(|x| (*x < 15)) {
+    for s in c.clone().map(|x| x * x).filter(|x| (*x < 15)) {
         println!("counter filtered: {}", s);
     }
 
@@ -123,4 +123,57 @@ fn main() {
     }
 
     // no more can use c: it has been moved into iterator
+}
+
+// function that takes ownership
+fn bogus_var_move<T>(names: Vec<T>)
+where
+    T: std::fmt::Debug,
+{
+    for s in names {
+        println!("counter: {:?}", s);
+    }
+}
+
+// use iter on array of &str
+#[test]
+fn f_test_iter_ref() {
+    let names = vec!["a", "b", "c"];
+
+    let bytes = names
+        .iter()
+        .map(|n: &&str| n.len())
+        .fold(0, |acc, len| acc + len);
+
+    assert_eq!(bytes, 3);
+
+    bogus_var_move(names);
+
+    // 'names' has been moved: can't be used
+}
+
+#[test]
+fn f_test_iter_val() {
+    let mut names: Vec<String> = Vec::new();
+
+    let a = String::from("a");
+    let b = String::from("b");
+    let c = String::from("c");
+
+    names.push(a);
+    names.push(b);
+    names.push(c);
+
+    assert_eq!(names, vec!["a", "b", "c"]);
+
+    let bytes = names
+        .iter()
+        .map(|n: &String| n.len())
+        .fold(0, |acc, len| acc + len);
+
+    assert_eq!(bytes, 3);
+
+    bogus_var_move(names);
+
+    // 'names' has been moved: can't be used
 }
