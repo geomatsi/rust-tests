@@ -1,5 +1,13 @@
 use std::clone;
 
+//
+
+fn main() {
+    println!("run tests: cargo test --bin test-iterators");
+}
+
+//
+
 #[derive(PartialEq, Debug)]
 struct Shoe {
     size: u32,
@@ -50,8 +58,6 @@ impl clone::Clone for Counter {
     }
 }
 
-//
-
 fn shoes_in_my_size(shoes: &Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
     shoes
         .into_iter()
@@ -60,9 +66,8 @@ fn shoes_in_my_size(shoes: &Vec<Shoe>, shoe_size: u32) -> Vec<Shoe> {
         .collect()
 }
 
-fn main() {
-    // Example 1
-
+#[test]
+fn f_test_iter_shoes() {
     let shoes = vec![
         Shoe {
             size: 10,
@@ -83,46 +88,52 @@ fn main() {
     ];
 
     let shoes_list = shoes.iter();
-    println!("ALL Shoes:");
     for s in shoes_list {
         println!("  model: {}, size: {}", s.model, s.size);
     }
 
+    // ok to use 'shoes' after .iter() over refs
     let shoes_list = shoes_in_my_size(&shoes, 11);
-    println!("My Shoes:");
     for s in shoes_list {
         println!("  model: {}, size: {}", s.model, s.size);
     }
 
+    // ok to use 'shoes' after 'shoes_in_my_size': no ownership changes
     let shoes_list = shoes.iter();
-    println!("ALL Shoes:");
     for s in shoes_list {
         println!("  model: {}, size: {}", s.model, s.size);
     }
 
+    // ok to use 'shoes' after .iter() over refs
     println!("Shoe list {:?}", shoes);
+}
 
-    // Example 2
+#[test]
+fn f_test_iter_counter() {
+    let c0 = Counter::new(5);
 
-    let c = Counter::new(5);
-
-    println!("c = {:?}", c);
-
-    for s in c.clone() {
+    // iter cloned c0
+    for s in c0.clone() {
         println!("counter values: {}", s);
     }
 
-    for s in c.clone().map(|x| x * x).filter(|x| (*x < 15)) {
-        println!("counter filtered: {}", s);
-    }
+    // ok to use iterator c0 after using clone
+    let c1 = c0.clone();
+    assert_eq!(c1.collect::<Vec<u32>>(), vec![1, 2, 3, 4, 5]);
 
-    println!("c = {:?}", c);
+    // ok to use iterator c0 after using its clone
+    let c2 = c0.clone().map(|x| x * x).filter(|x| (*x < 15));
+    assert_eq!(c2.collect::<Vec<u32>>(), vec![1, 4, 9]);
 
-    for s in c {
+    // ok to use c0 after ops with its clone
+    for s in c0 {
         println!("counter: {}", s);
     }
 
-    // no more can use c: it has been moved into iterator
+    // Notes:
+    //  - c0 has been moved to 'for': can't use it
+    //  - move occurs because `c0` has type `Counter`,
+    //    which does not implement the `Copy` trait
 }
 
 // function that takes ownership
