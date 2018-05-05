@@ -188,3 +188,23 @@ fn f_test_iter_val() {
 
     // 'names' has been moved: can't be used
 }
+
+#[test]
+fn f_test_loops() {
+
+    let values = vec!["a", "b", "c"];
+
+    // 'for' loop is syntactic sugar for into_iter
+    // use ref in 'for' in other to use iterable data further
+    for x in &values {
+        println!("{}", x);
+    }
+
+    assert_eq!(values, vec!["a", "b", "c"]);
+
+    for x in values {
+        println!("{}", x);
+    }
+
+    // 'values' has been moved into 'for' loop: can't be used
+}
