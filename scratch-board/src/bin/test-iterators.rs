@@ -191,7 +191,6 @@ fn f_test_iter_val() {
 
 #[test]
 fn f_test_loops() {
-
     let values = vec!["a", "b", "c"];
 
     // 'for' loop is syntactic sugar for into_iter
@@ -207,4 +206,21 @@ fn f_test_loops() {
     }
 
     // 'values' has been moved into 'for' loop: can't be used
+}
+
+#[test]
+fn f_test_into_iter() {
+    let v1 = vec![
+        "hello".to_string(),
+        "funny".to_string(),
+        "world".to_string(),
+    ];
+
+    let v2: Vec<String> = v1.iter().cloned().filter(|s| s.contains('o')).collect();
+    let v3: Vec<String> = v1.clone().into_iter().filter(|s| !s.contains('f')).collect();
+    let v4: Vec<String> = v1.into_iter().filter(|s| !s.contains('l')).collect();
+
+    assert_eq!(v2, vec!["hello", "world"]);
+    assert_eq!(v3, vec!["hello", "world"]);
+    assert_eq!(v4, vec!["funny"]);
 }
