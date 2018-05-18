@@ -72,3 +72,35 @@ fn f_test_tail() {
     assert_eq!(cons_head(&cons_tail(list2).unwrap()), Some(2));
     assert_eq!(cons_tail(list3).is_none(), true);
 }
+
+#[test]
+fn f_test_ref_deref() {
+    let mut x = 5;
+
+    {
+        let y = &x;
+
+        assert_eq!(x, 5);
+        assert_eq!(*y, 5);
+    }
+
+    x += 1;
+
+    {
+        let y = &x;
+
+        assert_eq!(x, 6);
+        assert_eq!(*y, 6);
+    }
+
+    let mut x = 5;
+    let z = Box::new(x);
+
+    assert_eq!(x, 5);
+    assert_eq!(*z, 5);
+
+    x += 1;
+
+    assert_eq!(x, 6);
+    assert_eq!(*z, 5);
+}
