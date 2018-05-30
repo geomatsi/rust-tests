@@ -1,4 +1,4 @@
-//use std::any::Any;
+use std::ops::Deref;
 
 //
 
@@ -103,4 +103,51 @@ fn f_test_ref_deref() {
 
     assert_eq!(x, 6);
     assert_eq!(*z, 5);
+}
+
+struct MyBox<T>(T);
+
+impl<T> MyBox<T> {
+    fn new(x: &T) -> MyBox<T>
+    where
+        T: std::clone::Clone,
+    {
+        MyBox(x.clone())
+    }
+}
+
+impl<T> Deref for MyBox<T> {
+    type Target = T;
+
+    fn deref(&self) -> &T {
+        &self.0
+    }
+}
+
+#[test]
+fn f_test_custom_ref_deref1() {
+    let mut x = 5;
+    let y = MyBox::new(&x);
+
+    assert_eq!(5, x);
+    assert_eq!(5, *y);
+
+    x += 1;
+
+    assert_eq!(6, x);
+    assert_eq!(5, *y);
+}
+
+#[test]
+fn f_test_custom_ref_deref2() {
+    let mut s = String::from("hello");
+    let r = MyBox::new(&s);
+
+    assert_eq!("hello", s);
+    assert_eq!("hello", *r);
+
+    s.push('w');
+
+    assert_eq!("hellow", s);
+    assert_eq!("hello", *r);
 }
