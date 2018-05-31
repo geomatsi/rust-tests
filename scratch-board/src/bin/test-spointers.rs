@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::ops::Deref;
 
 //
@@ -150,4 +151,57 @@ fn f_test_custom_ref_deref2() {
 
     assert_eq!("hellow", s);
     assert_eq!("hello", *r);
+}
+
+// verify Drop using counter based on RefCell
+
+struct TestDrop<'a> {
+    s: String,
+    c: &'a RefCell<u32>,
+}
+
+impl<'a> TestDrop<'a> {
+    fn new(s: &str, c: &'a RefCell<u32>) -> TestDrop<'a> {
+        *c.borrow_mut() += 1;
+
+        TestDrop {
+            s: String::from(s),
+            c: c,
+        }
+    }
+
+    fn get_data(&self) -> &String {
+        &self.s
+    }
+}
+
+impl<'a> Drop for TestDrop<'a> {
+    fn drop(&mut self) {
+        *self.c.borrow_mut() -= 1;
+    }
+}
+
+#[test]
+fn f_test_drop() {
+    let c = RefCell::new(0u32);
+    assert_eq!(*c.borrow(), 0);
+
+    let v1 = TestDrop::new("v1", &c);
+
+    assert_eq!(v1.get_data().as_str(), "v1");
+    assert_eq!(*c.borrow(), 1);
+
+    {
+        let v2 = TestDrop::new("v2", &c);
+
+        assert_eq!(v2.get_data().as_str(), "v2");
+        assert_eq!(*c.borrow(), 2);
+    }
+
+    assert_eq!(v1.get_data().as_str(), "v1");
+    assert_eq!(*c.borrow(), 1);
+
+    drop(v1);
+
+    assert_eq!(*c.borrow(), 0);
 }
