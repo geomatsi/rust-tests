@@ -1,5 +1,6 @@
 use std::cell::RefCell;
 use std::ops::Deref;
+use std::rc::Rc;
 
 //
 
@@ -204,4 +205,101 @@ fn f_test_drop() {
     drop(v1);
 
     assert_eq!(*c.borrow(), 0);
+}
+
+// lists using Rc
+
+enum ListRc {
+    ConsRc(i32, Rc<ListRc>),
+    NilRc,
+}
+
+use ListRc::{ConsRc, NilRc};
+
+impl ListRc {
+    fn cons_head(&self) -> Option<i32> {
+        match self {
+            ConsRc(head, _) => Some(*head),
+            NilRc => None,
+        }
+    }
+
+    fn cons_tail(&self) -> Option<Rc<ListRc>> {
+        match self {
+            ConsRc(_, tail) => Some(Rc::clone(tail)),
+            NilRc => None,
+        }
+    }
+}
+
+#[test]
+fn f_test_rc_list() {
+    let a = ConsRc(2, Rc::new(ConsRc(1, Rc::new(NilRc))));
+    let ra = Rc::new(a);
+    let wa = Rc::downgrade(&ra);
+
+    let b = ConsRc(10, Rc::clone(&ra));
+    let rb = Rc::new(b);
+
+    let c = ConsRc(100, Rc::clone(&rb));
+    let rc = Rc::new(c);
+
+    let d = ConsRc(1000, Rc::clone(&ra));
+    let rd = Rc::new(d);
+
+    assert_eq!(ra.cons_head().unwrap(), 2);
+
+    assert_eq!(rb.cons_head().unwrap(), 10);
+    assert_eq!(rb.cons_tail().unwrap().cons_head().unwrap(), 2);
+
+    assert_eq!(rc.cons_head().unwrap(), 100);
+    assert_eq!(rc.cons_tail().unwrap().cons_head().unwrap(), 10);
+    assert_eq!(
+        rc.cons_tail().unwrap().cons_tail().unwrap().cons_head(),
+        Some(2)
+    );
+
+    assert_eq!(rd.cons_head().unwrap(), 1000);
+    assert_eq!(rd.cons_tail().unwrap().cons_head().unwrap(), 2);
+
+    assert!(wa.upgrade().is_some());
+
+    drop(ra);
+
+    assert_eq!(rb.cons_head().unwrap(), 10);
+    assert_eq!(rb.cons_tail().unwrap().cons_head().unwrap(), 2);
+
+    assert_eq!(rc.cons_head().unwrap(), 100);
+    assert_eq!(rc.cons_tail().unwrap().cons_head().unwrap(), 10);
+    assert_eq!(
+        rc.cons_tail().unwrap().cons_tail().unwrap().cons_head(),
+        Some(2)
+    );
+
+    assert_eq!(rd.cons_head().unwrap(), 1000);
+    assert_eq!(rd.cons_tail().unwrap().cons_head().unwrap(), 2);
+
+    assert!(wa.upgrade().is_some());
+
+    drop(rb);
+
+    assert_eq!(rc.cons_head().unwrap(), 100);
+    assert_eq!(rc.cons_tail().unwrap().cons_head().unwrap(), 10);
+    assert_eq!(
+        rc.cons_tail().unwrap().cons_tail().unwrap().cons_head(),
+        Some(2)
+    );
+
+    assert!(wa.upgrade().is_some());
+
+    drop(rc);
+
+    assert_eq!(rd.cons_head().unwrap(), 1000);
+    assert_eq!(rd.cons_tail().unwrap().cons_head().unwrap(), 2);
+
+    assert!(wa.upgrade().is_some());
+
+    drop(rd);
+
+    assert!(wa.upgrade().is_none());
 }
