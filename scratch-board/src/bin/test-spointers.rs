@@ -303,3 +303,52 @@ fn f_test_rc_list() {
 
     assert!(wa.upgrade().is_none());
 }
+
+// RefCell runtime checks
+
+#[test]
+fn f_test_refcell_borrow() {
+    let a = RefCell::new(String::from("a"));
+
+    {
+        let b = a.borrow();
+        let c = a.borrow();
+
+        assert_eq!(a.borrow().as_str(), "a");
+        assert_eq!(b.as_str(), "a");
+        assert_eq!(c.as_str(), "a");
+    }
+
+    a.borrow_mut().push('a');
+
+    let b = a.borrow();
+    let c = a.borrow();
+
+    assert_eq!(a.borrow().as_str(), "aa");
+    assert_eq!(b.as_str(), "aa");
+    assert_eq!(c.as_str(), "aa");
+}
+
+#[test]
+#[should_panic(expected = "already borrowed: BorrowMutError")]
+fn f_test_refcell_borrow_unmut_mut() {
+    let a = RefCell::new(String::from("a"));
+    let b = a.borrow();
+
+    a.borrow_mut().push('a');
+
+    assert_eq!(b.as_str(), "a");
+}
+
+#[test]
+#[should_panic(expected = "already borrowed: BorrowMutError")]
+fn f_test_refcell_borrow_mut_mut() {
+    let a = RefCell::new(String::from("a"));
+    let b = a.borrow_mut();
+
+    a.borrow_mut().push('a');
+
+    assert_eq!(b.as_str(), "a");
+}
+
+// interior mutability using RefCell
