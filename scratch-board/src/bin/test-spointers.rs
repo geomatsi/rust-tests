@@ -1,4 +1,5 @@
 use std::cell::RefCell;
+use std::collections::HashMap;
 use std::ops::Deref;
 use std::rc::Rc;
 
@@ -352,3 +353,41 @@ fn f_test_refcell_borrow_mut_mut() {
 }
 
 // interior mutability using RefCell
+
+pub trait MQTTpub {
+    fn publish(&self, topic: &str, msg: &str);
+}
+
+struct MockMQTTpublisher {
+    posts: RefCell<HashMap<String, String>>,
+    count: RefCell<u32>,
+}
+
+impl MockMQTTpublisher {
+    fn new() -> MockMQTTpublisher {
+        MockMQTTpublisher {
+            posts: RefCell::new(HashMap::new()),
+            count: RefCell::new(0u32),
+        }
+    }
+}
+
+impl MQTTpub for MockMQTTpublisher {
+    // note that self is not mutable in publish, but borrow_mut is used to implement mock tracking
+    fn publish(&self, topic: &str, msg: &str) {
+        self.posts
+            .borrow_mut()
+            .insert(String::from(topic), String::from(msg));
+        *self.count.borrow_mut() += 1;
+    }
+}
+
+#[test]
+fn f_test_refcell_interior_mutability() {
+    let mock_publisher = MockMQTTpublisher::new();
+
+    mock_publisher.publish("topic1", "hello");
+    mock_publisher.publish("topic2", "world");
+
+    assert_eq!(*mock_publisher.count.borrow(), 2);
+}
