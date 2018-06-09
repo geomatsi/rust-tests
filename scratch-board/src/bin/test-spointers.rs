@@ -391,3 +391,64 @@ fn f_test_refcell_interior_mutability() {
 
     assert_eq!(*mock_publisher.count.borrow(), 2);
 }
+
+// using pattern: RefCell + Rc = multiple owners and mutability
+// note:
+//   similar to RefCell/Drop example above, but using Rc
+//   helps to avoid using lifetimes
+
+struct Actor {
+    c_sem: Rc<RefCell<u32>>,
+    count: u32,
+}
+
+impl Actor {
+    fn new(s: Rc<RefCell<u32>>) -> Actor {
+        Actor { c_sem: s, count: 0 }
+    }
+
+    fn take(&mut self) {
+        *self.c_sem.borrow_mut() += 1;
+        self.count += 1;
+    }
+
+    fn release(&mut self) {
+        if self.count > 0 {
+            *self.c_sem.borrow_mut() -= 1;
+            self.count -= 1;
+        }
+    }
+}
+
+impl Drop for Actor {
+    fn drop(&mut self) {
+        *self.c_sem.borrow_mut() -= self.count;
+    }
+}
+
+#[test]
+fn f_test_c_sem() {
+    let cs = RefCell::new(0u32);
+    let rs = Rc::new(cs);
+
+    assert_eq!(*rs.borrow(), 0);
+
+    let mut a1 = Actor::new(Rc::clone(&rs));
+
+    assert_eq!(*rs.borrow(), 0);
+    a1.take();
+    assert_eq!(*rs.borrow(), 1);
+
+    {
+        let mut a2 = Actor::new(Rc::clone(&rs));
+
+        assert_eq!(*rs.borrow(), 1);
+        a2.take();
+        a2.take();
+        assert_eq!(*rs.borrow(), 3);
+        a2.release();
+        assert_eq!(*rs.borrow(), 2);
+    }
+
+    assert_eq!(*rs.borrow(), 1);
+}
