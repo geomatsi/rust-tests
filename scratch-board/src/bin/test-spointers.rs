@@ -452,3 +452,35 @@ fn f_test_c_sem() {
 
     assert_eq!(*rs.borrow(), 1);
 }
+
+// simple weak/strong reference tests
+
+#[test]
+fn f_test_weak_strong_refs() {
+    let value = 42u32;
+    let sr1 = Rc::new(value);
+    let wr1 = Rc::downgrade(&sr1);
+
+    assert_eq!(Rc::strong_count(&sr1), 1);
+    assert_eq!(Rc::weak_count(&sr1), 1);
+
+    {
+        let sr2 = Rc::clone(&sr1);
+        let wr2 = Rc::downgrade(&sr2);
+
+        assert_eq!(Rc::strong_count(&sr2), 2);
+        assert_eq!(Rc::weak_count(&sr2), 2);
+
+        let sr3 = wr2.upgrade().unwrap();
+
+        assert_eq!(Rc::strong_count(&sr3), 3);
+        assert_eq!(Rc::weak_count(&sr3), 2);
+    }
+
+    assert_eq!(Rc::strong_count(&sr1), 1);
+    assert_eq!(Rc::weak_count(&sr1), 1);
+
+    drop(sr1);
+
+    assert_eq!(wr1.upgrade(), None);
+}
