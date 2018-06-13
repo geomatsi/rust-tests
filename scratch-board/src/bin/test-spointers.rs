@@ -582,4 +582,12 @@ fn f_test_tree() {
     assert_eq!(Rc::weak_count(&leaf1), 1);
     assert_eq!(Rc::weak_count(&branch), 3);
     assert_eq!(branch.children.borrow().len(), 3);
+
+    assert_eq!(Rc::weak_count(&leaf1), 1);
+    assert_eq!(leaf1.children.borrow().len(), 1);
+
+    leaf1.children.borrow_mut().pop();
+
+    assert_eq!(Rc::weak_count(&leaf1), 0);
+    assert_eq!(leaf1.children.borrow().len(), 0);
 }
