@@ -471,11 +471,19 @@ fn f_test_weak_strong_refs() {
 
         assert_eq!(Rc::strong_count(&sr2), 2);
         assert_eq!(Rc::weak_count(&sr2), 2);
+        assert_eq!(Rc::weak_count(&sr1), 2);
 
         let sr3 = wr2.upgrade().unwrap();
 
         assert_eq!(Rc::strong_count(&sr3), 3);
         assert_eq!(Rc::weak_count(&sr3), 2);
+        assert_eq!(Rc::weak_count(&sr1), 2);
+
+        let wr3 = Rc::downgrade(&sr1);
+        assert_eq!(Rc::weak_count(&sr1), 3);
+
+        let _sr4 = wr3.upgrade().unwrap();
+        assert_eq!(Rc::weak_count(&sr1), 3);
     }
 
     assert_eq!(Rc::strong_count(&sr1), 1);
