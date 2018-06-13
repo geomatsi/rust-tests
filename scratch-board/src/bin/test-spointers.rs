@@ -2,6 +2,7 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::ops::Deref;
 use std::rc::Rc;
+use std::rc::Weak;
 
 //
 
@@ -483,4 +484,94 @@ fn f_test_weak_strong_refs() {
     drop(sr1);
 
     assert_eq!(wr1.upgrade(), None);
+}
+
+// implement Tree using strong/weak references
+
+#[derive(Debug)]
+struct Node {
+    value: i32,
+    parent: RefCell<Weak<Node>>,
+    children: RefCell<Vec<Rc<Node>>>,
+}
+
+impl Node {
+    fn new_leaf(v: i32) -> Rc<Node> {
+        Rc::new(Node {
+            value: v,
+            parent: RefCell::new(Weak::new()),
+            children: RefCell::new(vec![]),
+        })
+    }
+
+    fn add_leaf(branch: &Rc<Node>, leaf: &Rc<Node>) {
+        branch.children.borrow_mut().push(Rc::clone(leaf));
+        *leaf.parent.borrow_mut() = Rc::downgrade(branch);
+    }
+}
+
+#[test]
+fn f_test_tree() {
+    let leaf1 = Node::new_leaf(1);
+    let leaf2 = Node::new_leaf(2);
+
+    let branch = Rc::new(Node {
+        value: 0,
+        parent: RefCell::new(Weak::new()),
+        children: RefCell::new(vec![]),
+    });
+
+    assert_eq!(Rc::strong_count(&leaf1), 1);
+    assert_eq!(Rc::strong_count(&leaf2), 1);
+    assert_eq!(Rc::strong_count(&branch), 1);
+    assert_eq!(Rc::weak_count(&branch), 0);
+
+    Node::add_leaf(&branch, &leaf1);
+
+    assert_eq!(Rc::strong_count(&leaf1), 2);
+    assert_eq!(Rc::strong_count(&leaf2), 1);
+    assert_eq!(Rc::strong_count(&branch), 1);
+    assert_eq!(Rc::weak_count(&branch), 1);
+    assert_eq!(branch.children.borrow().len(), 1);
+
+    Node::add_leaf(&branch, &leaf2);
+
+    assert_eq!(Rc::strong_count(&leaf1), 2);
+    assert_eq!(Rc::strong_count(&leaf2), 2);
+    assert_eq!(Rc::strong_count(&branch), 1);
+    assert_eq!(Rc::weak_count(&branch), 2);
+    assert_eq!(Rc::weak_count(&leaf1), 0);
+    assert_eq!(Rc::weak_count(&leaf2), 0);
+    assert_eq!(branch.children.borrow().len(), 2);
+
+    {
+        let leaf3 = Node::new_leaf(21);
+        let leaf4 = Node::new_leaf(22);
+
+        Node::add_leaf(&branch, &leaf3);
+
+        assert_eq!(Rc::strong_count(&branch), 1);
+        assert_eq!(Rc::strong_count(&leaf3), 2);
+        assert_eq!(Rc::weak_count(&branch), 3);
+        assert_eq!(branch.children.borrow().len(), 3);
+
+        Node::add_leaf(&leaf1, &leaf4);
+
+        assert_eq!(Rc::strong_count(&branch), 1);
+        assert_eq!(Rc::strong_count(&leaf1), 2);
+        assert_eq!(Rc::strong_count(&leaf4), 2);
+        assert_eq!(Rc::weak_count(&leaf1), 1);
+        assert_eq!(Rc::weak_count(&branch), 3);
+    }
+
+    assert_eq!(Rc::strong_count(&leaf1), 2);
+    assert_eq!(Rc::strong_count(&leaf2), 2);
+    assert_eq!(Rc::strong_count(&branch), 1);
+    assert_eq!(Rc::weak_count(&leaf2), 0);
+
+    // NB: leaf3 and leaf4 are still alive
+    //     since they are stored as strong refs in children
+    assert_eq!(Rc::weak_count(&leaf1), 1);
+    assert_eq!(Rc::weak_count(&branch), 3);
+    assert_eq!(branch.children.borrow().len(), 3);
 }
