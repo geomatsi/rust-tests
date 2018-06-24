@@ -2,6 +2,7 @@
 //
 //
 
+use std::sync::mpsc;
 use std::thread;
 
 fn main() {
@@ -53,4 +54,39 @@ fn f_test_thread_closure_v2() {
     handle.join().unwrap();
 
     assert_eq!(v.key, 10);
+}
+
+//
+
+#[test]
+fn f_test_msg_v1() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let m = String::from("one");
+        tx.send(m).unwrap();
+    });
+
+    assert_eq!(rx.recv().unwrap(), "one");
+}
+
+#[test]
+fn f_test_msg_v2() {
+    let (tx, rx) = mpsc::channel();
+
+    thread::spawn(move || {
+        let ms = vec![1, 2, 3];
+
+        for m in ms {
+            tx.send(m).unwrap();
+        }
+    });
+
+    // NB: extra element here is ok, since
+    //     iterator will end when the channel is closed
+    let mut ms = vec![4, 3, 2, 1];
+
+    for m in rx {
+        assert_eq!(m, ms.pop().unwrap());
+    }
 }
