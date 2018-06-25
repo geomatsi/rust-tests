@@ -1,16 +1,21 @@
 extern crate rand;
 
-use std::io;
 use rand::Rng;
+use std::io;
 use std::thread;
 use std::time::Duration;
 
-struct Cacher<T> where T: Fn(u32) -> u32 {
+struct Cacher<T>
+where
+    T: Fn(u32) -> u32,
+{
     calculation: T,
     value: Option<u32>,
 }
 
-impl<T> Cacher<T> where T: Fn(u32) -> u32
+impl<T> Cacher<T>
+where
+    T: Fn(u32) -> u32,
 {
     fn new(calculation: T) -> Cacher<T> {
         Cacher {
@@ -26,7 +31,7 @@ impl<T> Cacher<T> where T: Fn(u32) -> u32
                 let v = (self.calculation)(arg);
                 self.value = Some(v);
                 v
-            },
+            }
         }
     }
 }
@@ -59,8 +64,7 @@ fn main() {
         .read_line(&mut input)
         .expect("failed to read line");
 
-    let intensity: u32 =
-        input.trim().parse().expect("failed to parse input");
+    let intensity: u32 = input.trim().parse().expect("failed to parse input");
 
     sim_generate_workout(intensity);
 }

@@ -217,7 +217,11 @@ fn f_test_into_iter() {
     ];
 
     let v2: Vec<String> = v1.iter().cloned().filter(|s| s.contains('o')).collect();
-    let v3: Vec<String> = v1.clone().into_iter().filter(|s| !s.contains('f')).collect();
+    let v3: Vec<String> = v1
+        .clone()
+        .into_iter()
+        .filter(|s| !s.contains('f'))
+        .collect();
     let v4: Vec<String> = v1.into_iter().filter(|s| !s.contains('l')).collect();
 
     assert_eq!(v2, vec!["hello", "world"]);
