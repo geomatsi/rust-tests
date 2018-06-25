@@ -3,11 +3,15 @@
 //
 
 use std::sync::mpsc;
+use std::sync::Arc;
+use std::sync::Mutex;
 use std::thread;
 
 fn main() {
     println!("run tests: cargo test --bin test-concurrency");
 }
+
+// thread closure
 
 #[test]
 fn f_test_thread_closure_v1() {
@@ -22,7 +26,7 @@ fn f_test_thread_closure_v1() {
     assert_eq!(a, 5);
 }
 
-//
+// thread closure
 
 struct Env {
     key: u32,
@@ -56,7 +60,7 @@ fn f_test_thread_closure_v2() {
     assert_eq!(v.key, 10);
 }
 
-//
+// messages
 
 #[test]
 fn f_test_msg_v1() {
@@ -89,4 +93,29 @@ fn f_test_msg_v2() {
     for m in rx {
         assert_eq!(m, ms.pop().unwrap());
     }
+}
+
+// mutexes
+
+#[test]
+fn f_test_mutexes_v1() {
+    let counter = Arc::new(Mutex::new(0));
+    let mut handles = vec![];
+
+    for _ in 0..10 {
+        let counter = Arc::clone(&counter);
+        let handle = thread::spawn(move || {
+            let mut num = counter.lock().unwrap();
+
+            *num += 1;
+        });
+
+        handles.push(handle);
+    }
+
+    for handle in handles {
+        handle.join().unwrap();
+    }
+
+    assert_eq!(*counter.lock().unwrap(), 10u32);
 }
