@@ -41,11 +41,21 @@ fn f_test_v3() {
 }
 
 #[test]
-fn f_test_v4() {
+fn f_test_v4_1() {
     let mut post = Post::new();
 
     post.add_text("Hello World");
     post.request_review();
     post.approve();
     assert_eq!("Hello World", post.content());
+}
+
+#[test]
+fn f_test_v4_2() {
+    let mut post = Post::new();
+
+    post.add_text("Hello World");
+    post.request_review();
+    post.reject();
+    assert_eq!("", post.content());
 }
