@@ -1,3 +1,6 @@
+extern crate websrv;
+use websrv::ThreadPool;
+
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
@@ -9,13 +12,16 @@ fn main() {
     let port = get_user_port();
     let addr = SocketAddr::from(([127, 0, 0, 1], port));
     let listener = TcpListener::bind(addr).unwrap();
+    let pool = ThreadPool::new(4);
 
     println!("Listen on {:?}", listener);
 
     for stream in listener.incoming() {
         let stream = stream.unwrap();
 
-        handle_req(stream);
+        pool.execute(|| {
+            handle_req(stream);
+        });
     }
 }
 
