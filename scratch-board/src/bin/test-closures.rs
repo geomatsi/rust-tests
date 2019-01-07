@@ -68,3 +68,59 @@ fn main() {
 
     sim_generate_workout(intensity);
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn f_test_closure_t1() {
+        let m = 1.0;
+        let n = 2.0;
+
+        let line = |x| m * x + n;
+
+        assert_eq!(line(0.0), 2.0);
+        assert_eq!(line(1.0), 3.0);
+    }
+
+    #[test]
+    fn f_test_closure_t2() {
+        let mut m = 1.0;
+        let mut n = 2.0;
+
+        let line = move |x| m * x + n;
+
+        n += 1.0;
+        assert_eq!(line(0.0), 2.0); // note that m, n as initially captured from environment
+        assert_eq!(m, 1.0);
+        assert_eq!(n, 3.0);
+
+        m += 1.0;
+        assert_eq!(line(1.0), 3.0); // note that m, n as initially captured from environment
+        assert_eq!(m, 2.0);
+        assert_eq!(n, 3.0);
+    }
+
+    fn move_add(a: i32) -> impl Fn(i32) -> i32 {
+        move |x| a + x
+    }
+
+    #[test]
+    fn f_test_closure_t3() {
+        let v = 2;
+        let f = move_add(v);
+
+        assert_eq!(f(1), 3);
+    }
+
+    #[test]
+    fn f_test_closure_t4() {
+        let mut v = vec![1; 4];
+        assert_eq!(v.iter().filter(|&&n| n > 0).count(), 4);
+
+        v.push(1);
+        assert_eq!(v.iter().filter(|&&n| n > 0).count(), 5);
+
+        v.push(1);
+        assert_eq!(v.iter().filter(|&&n| n > 0).count(), 6);
+    }
+}
