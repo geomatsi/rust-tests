@@ -53,7 +53,7 @@ mod tests {
             (
                 slice::from_raw_parts_mut(ptr, mid),
                 slice::from_raw_parts_mut(ptr.offset(mid as isize), len - mid),
-                )
+            )
         }
     }
 

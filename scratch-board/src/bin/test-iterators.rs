@@ -138,13 +138,13 @@ mod tests {
 
     // function that takes ownership
     fn bogus_var_move<T>(names: Vec<T>)
-        where
-            T: std::fmt::Debug,
-        {
-            for s in names {
-                println!("counter: {:?}", s);
-            }
+    where
+        T: std::fmt::Debug,
+    {
+        for s in names {
+            println!("counter: {:?}", s);
         }
+    }
 
     // use iter on array of &str
     #[test]

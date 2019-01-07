@@ -42,7 +42,10 @@ mod tests {
 
     #[test]
     fn f_test_head() {
-        let list1 = List::Cons(1, Box::new(List::Cons(2, Box::new(List::Cons(3, Box::new(List::Nil))))));
+        let list1 = List::Cons(
+            1,
+            Box::new(List::Cons(2, Box::new(List::Cons(3, Box::new(List::Nil))))),
+        );
         let list2 = List::Nil;
 
         assert_eq!(cons_head(&list1), Some(1));
@@ -53,8 +56,14 @@ mod tests {
 
     #[test]
     fn f_test_tail() {
-        let list1 = List::Cons(1, Box::new(List::Cons(2, Box::new(List::Cons(3, Box::new(List::Nil))))));
-        let list2 = List::Cons(1, Box::new(List::Cons(2, Box::new(List::Cons(3, Box::new(List::Nil))))));
+        let list1 = List::Cons(
+            1,
+            Box::new(List::Cons(2, Box::new(List::Cons(3, Box::new(List::Nil))))),
+        );
+        let list2 = List::Cons(
+            1,
+            Box::new(List::Cons(2, Box::new(List::Cons(3, Box::new(List::Nil))))),
+        );
         let list3 = List::Nil;
 
         assert_eq!(
@@ -101,11 +110,11 @@ mod tests {
 
     impl<T> MyBox<T> {
         fn new(x: &T) -> MyBox<T>
-            where
-                T: std::clone::Clone,
-            {
-                MyBox(x.clone())
-            }
+        where
+            T: std::clone::Clone,
+        {
+            MyBox(x.clone())
+        }
     }
 
     impl<T> Deref for MyBox<T> {
