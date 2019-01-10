@@ -100,12 +100,84 @@ mod tests {
         assert_eq!(n, 3.0);
     }
 
+    #[test]
+    fn f_test_closure_t3() {
+        let mut m: u32 = 1;
+
+        // HACK: FIXME ???
+        // Variable m is going to be mutably borrowed by closure,
+        // so it can not be directly checked by assert_eq. However
+        // I want to check its value  between closure calls. Here
+        // I am using raw pointer to m for this purpose.
+        let p = &m as *const u32;
+
+        let mut m_inc = || m += 1;
+
+        m_inc();
+        unsafe {
+            assert_eq!(*p, 2);
+        } // not that m value is modified by closure
+
+        m_inc();
+        unsafe {
+            assert_eq!(*p, 3);
+        } // not that m value is modified by closure
+    }
+
+    #[test]
+    fn f_test_closure_t4() {
+        let mut m: u32 = 1;
+
+        // safe approach for the same thing:
+        // use scoping for closure to release the borrow
+        {
+            let mut m_inc = || m += 1;
+
+            m_inc();
+        }
+
+        assert_eq!(m, 2);
+
+        {
+            let mut m_inc = || m += 1;
+
+            m_inc();
+        }
+
+        assert_eq!(m, 3);
+    }
+
+    fn f_m_inc(c: &mut u32) {
+        *c += 1;
+    }
+
+    #[test]
+    fn f_test_closure_t5() {
+        let mut m: u32 = 1;
+        let mut c_m_inc = || m += 1;
+
+        c_m_inc();
+        c_m_inc();
+        c_m_inc();
+
+        // ATTENTION: m is re-borrowed here
+        assert_eq!(m, 4);
+
+        // can not use closure m_inc anymore since m has been reborrowed !
+        // compilation will fail for the uncommented next line
+        // c_m_inc();
+
+        // meanwhile function can be used here:
+        f_m_inc(&mut m);
+        assert_eq!(m, 5);
+    }
+
     fn move_add(a: i32) -> impl Fn(i32) -> i32 {
         move |x| a + x
     }
 
     #[test]
-    fn f_test_closure_t3() {
+    fn f_test_closure_t6() {
         let v = 2;
         let f = move_add(v);
 
@@ -113,7 +185,7 @@ mod tests {
     }
 
     #[test]
-    fn f_test_closure_t4() {
+    fn f_test_closure_t7() {
         let mut v = vec![1; 4];
         assert_eq!(v.iter().filter(|&&n| n > 0).count(), 4);
 
