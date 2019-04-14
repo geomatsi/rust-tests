@@ -12,30 +12,68 @@ mod tests {
     use std::sync::Mutex;
 
     lazy_static! {
-        static ref GLOBAL: Mutex<Option<u32>> = Mutex::new(None);
+        static ref GLOBAL_INT: Mutex<Option<u32>> = Mutex::new(None);
+        static ref GLOBAL_STR: Mutex<Option<String>> = Mutex::new(None);
         static ref GLOBAL_CELL: Mutex<RefCell<Option<u32>>> = Mutex::new(RefCell::new(None));
     }
 
     #[test]
-    pub fn f_test_global_mutex1() {
+    pub fn f_test_global_mutex_int() {
         {
             // scoped lock guard: mutex will be unlocked when guard goes out of scope
-            let guard = GLOBAL.lock();
+            let guard = GLOBAL_INT.lock();
 
             if let Ok(mut n) = guard {
                 n.replace(20);
             }
 
             // first unwrap for guard, second unwrap for Option
-            assert_eq!(GLOBAL.lock().unwrap().unwrap(), 20);
+            assert_eq!(GLOBAL_INT.lock().unwrap().unwrap(), 20);
         }
 
         // first unwrap for guard, second unwrap for Option
-        assert_eq!(GLOBAL.lock().unwrap().unwrap(), 20);
+        assert_eq!(GLOBAL_INT.lock().unwrap().unwrap(), 20);
     }
 
     #[test]
-    pub fn f_test_global_mutex2() {
+    pub fn f_test_global_mutex_str() {
+        {
+            // scoped lock guard: mutex will be unlocked when guard goes out of scope
+            let guard = GLOBAL_STR.lock();
+
+            if let Ok(mut n) = guard {
+                n.replace(String::from("hello"));
+            }
+
+            // unwrap for guard, second unwrap for Option, as_ref for assert comparison
+            assert_eq!(GLOBAL_STR.lock().unwrap().as_ref().unwrap(), "hello");
+        }
+
+        {
+            // scoped lock guard: mutex will be unlocked when guard goes out of scope
+            let guard = GLOBAL_STR.lock();
+
+            if let Ok(mut n) = guard {
+                n.replace(String::from("my"));
+            }
+
+            // unwrap for guard, second unwrap for Option, as_ref for assert comparison
+            assert_eq!(GLOBAL_STR.lock().unwrap().as_ref().unwrap(), "my");
+
+            if let Some (ref mut n) = GLOBAL_STR.lock().unwrap().deref_mut() {
+                *n = String::from("world");
+            }
+
+            // unwrap for guard, second unwrap for Option, as_ref for assert comparison
+            assert_eq!(GLOBAL_STR.lock().unwrap().as_ref().unwrap(), "world");
+        }
+
+        // first unwrap for guard, second unwrap for Option
+        assert_eq!(GLOBAL_STR.lock().unwrap().as_ref().unwrap(), "world");
+    }
+
+    #[test]
+    pub fn f_test_global_mutex_cell() {
         {
             // scoped lock guard: mutex will be unlocked when guard goes out of scope
             let guard = GLOBAL_CELL.lock();
@@ -77,9 +115,16 @@ mod tests {
 
             // unwrap for guard, borrow for RefCell, second unwrap for Option
             assert_eq!(GLOBAL_CELL.lock().unwrap().borrow().unwrap(), 30);
+
+            if let Some (ref mut n) = GLOBAL_CELL.lock().unwrap().borrow_mut().deref_mut() {
+                *n = 40;
+            }
+
+            // unwrap for guard, borrow for RefCell, second unwrap for Option
+            assert_eq!(GLOBAL_CELL.lock().unwrap().borrow().unwrap(), 40);
         }
 
-        assert_eq!(GLOBAL_CELL.lock().unwrap().borrow().unwrap(), 30);
+        assert_eq!(GLOBAL_CELL.lock().unwrap().borrow().unwrap(), 40);
 
     }
 }
