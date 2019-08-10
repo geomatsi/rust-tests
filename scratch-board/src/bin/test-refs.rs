@@ -60,7 +60,7 @@ mod tests {
             // unwrap for guard, second unwrap for Option, as_ref for assert comparison
             assert_eq!(GLOBAL_STR.lock().unwrap().as_ref().unwrap(), "my");
 
-            if let Some (ref mut n) = GLOBAL_STR.lock().unwrap().deref_mut() {
+            if let Some(ref mut n) = GLOBAL_STR.lock().unwrap().deref_mut() {
                 *n = String::from("world");
             }
 
@@ -116,7 +116,7 @@ mod tests {
             // unwrap for guard, borrow for RefCell, second unwrap for Option
             assert_eq!(GLOBAL_CELL.lock().unwrap().borrow().unwrap(), 30);
 
-            if let Some (ref mut n) = GLOBAL_CELL.lock().unwrap().borrow_mut().deref_mut() {
+            if let Some(ref mut n) = GLOBAL_CELL.lock().unwrap().borrow_mut().deref_mut() {
                 *n = 40;
             }
 
@@ -125,6 +125,5 @@ mod tests {
         }
 
         assert_eq!(GLOBAL_CELL.lock().unwrap().borrow().unwrap(), 40);
-
     }
 }
