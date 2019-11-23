@@ -11,11 +11,13 @@ fn reverse_string(s: &mut Vec<char>) {
         return;
     }
 
-    let n = s.len();
-    let m = s.len() / 2;
+    let mut n = 0;
+    let mut m = s.len() - 1;
 
-    for i in 0..m {
-        s.swap(i, n - 1 - i);
+    while n < m {
+        s.swap(n, m);
+        n = n + 1;
+        m = m - 1;
     }
 
     return;
