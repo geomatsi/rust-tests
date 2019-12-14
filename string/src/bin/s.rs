@@ -28,11 +28,11 @@ fn main() {
 }
 
 // dump string chars
-fn f_dump_as_chars(s: &String) {
+fn f_dump_as_chars(s: &str) {
     let mut t = String::new();
 
     for c in s.chars() {
-        if t.len() == 0 {
+        if t.is_empty() {
             t = format!("{}", c);
         } else {
             t = format!("{}-{}", t, c);
@@ -43,11 +43,11 @@ fn f_dump_as_chars(s: &String) {
 }
 
 // dump string bytes
-fn f_dump_as_bytes(s: &String) {
+fn f_dump_as_bytes(s: &str) {
     let mut t = String::new();
 
     for c in s.bytes() {
-        if t.len() == 0 {
+        if t.is_empty() {
             t = format!("{}", c);
         } else {
             t = format!("{}-{}", t, c);
@@ -99,23 +99,23 @@ fn count_words(ss: &str) -> u32 {
     let mut w: u32 = 0;
     let mut state: WState = WState::START;
 
-    for i in 0..ss.len() {
+    for e in b.iter().take(ss.len()) {
         match state {
             WState::START => {
-                if b[i] != b' ' {
+                if *e != b' ' {
                     state = WState::WORD;
                     w += 1;
                 }
             }
             WState::WORD => {
-                if b[i] == b' ' {
+                if *e == b' ' {
                     state = WState::START;
                 }
             }
         }
     }
 
-    return w;
+    w
 }
 
 #[test]
@@ -144,7 +144,7 @@ fn replace_char(s: &str, co: char, cn: char) -> String {
         }
     }
 
-    return res;
+    res
 }
 
 #[test]
@@ -343,11 +343,9 @@ fn reverse_string(s: &mut Vec<char>) {
 
     while n < m {
         s.swap(n, m);
-        n = n + 1;
-        m = m - 1;
+        n += 1;
+        m -= 1;
     }
-
-    return;
 }
 
 #[test]
@@ -380,59 +378,59 @@ fn test_reverse_string() {
 // example: reverse words order in strings trimming all extra spaces
 #[allow(dead_code)]
 fn reverse_words(s: String) -> String {
-    if s.len() == 0 {
+    if s.is_empty() {
         return s;
     }
 
-    let c = s.chars().collect::<Vec<char>>();
-    let mut v: Vec<char> = Vec::new();
+    let chars = s.chars().collect::<Vec<char>>();
+    let mut out: Vec<char> = Vec::new();
 
-    let mut i = c.len() - 1;
+    let mut i = chars.len() - 1;
     let mut j;
 
     loop {
         loop {
-            if i == 0 || !c[i].is_whitespace() {
+            if i == 0 || !chars[i].is_whitespace() {
                 break;
             }
 
             i -= 1;
         }
 
-        if i == 0 && c[i].is_whitespace() {
+        if i == 0 && chars[i].is_whitespace() {
             break;
         }
 
-        if !v.is_empty() {
-            v.push(' ');
+        if !out.is_empty() {
+            out.push(' ');
         }
 
         j = i;
 
         loop {
-            if j == 0 || c[j].is_whitespace() {
+            if j == 0 || chars[j].is_whitespace() {
                 break;
             }
 
             j -= 1;
         }
 
-        if j == 0 && !c[j].is_whitespace() {
-            for k in j..i + 1 {
-                v.push(c[k]);
+        if j == 0 && !chars[j].is_whitespace() {
+            for e in chars.iter().take(i + 1).skip(j) {
+                out.push(*e);
             }
 
             break;
         }
 
-        for k in j + 1..i + 1 {
-            v.push(c[k]);
+        for e in chars.iter().take(i + 1).skip(j + 1) {
+            out.push(*e);
         }
 
         i = j;
     }
 
-    v.iter().collect::<String>()
+    out.iter().collect::<String>()
 }
 
 #[test]
@@ -469,59 +467,59 @@ fn test_reverse_words() {
 // example: reverse each word in string
 #[allow(dead_code)]
 fn reverse_each_word(s: String) -> String {
-    if s.len() == 0 {
+    if s.is_empty() {
         return s;
     }
 
-    let c = s.chars().collect::<Vec<char>>();
-    let mut v: Vec<char> = Vec::new();
+    let chars = s.chars().collect::<Vec<char>>();
+    let mut out: Vec<char> = Vec::new();
 
     let mut i = 0;
     let mut j;
 
     loop {
         loop {
-            if i == c.len() - 1 || !c[i].is_whitespace() {
+            if i == chars.len() - 1 || !chars[i].is_whitespace() {
                 break;
             }
 
             i += 1;
         }
 
-        if i == c.len() - 1 && c[i].is_whitespace() {
+        if i == chars.len() - 1 && chars[i].is_whitespace() {
             break;
         }
 
-        if !v.is_empty() {
-            v.push(' ');
+        if !out.is_empty() {
+            out.push(' ');
         }
 
         j = i;
 
         loop {
-            if j == c.len() - 1 || c[j].is_whitespace() {
+            if j == chars.len() - 1 || chars[j].is_whitespace() {
                 break;
             }
 
             j += 1;
         }
 
-        if j == c.len() - 1 && !c[j].is_whitespace() {
-            for k in (i..j + 1).rev() {
-                v.push(c[k]);
+        if j == chars.len() - 1 && !chars[j].is_whitespace() {
+            for k in (i..=j).rev() {
+                out.push(chars[k]);
             }
 
             break;
         }
 
         for k in (i..j).rev() {
-            v.push(c[k]);
+            out.push(chars[k]);
         }
 
         i = j;
     }
 
-    v.iter().collect::<String>()
+    out.iter().collect::<String>()
 }
 
 #[test]
