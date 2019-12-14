@@ -425,7 +425,7 @@ fn reverse_words(s: String) -> String {
             break;
         }
 
-        for k in j+1..i+1 {
+        for k in j + 1..i + 1 {
             v.push(c[k]);
         }
 
@@ -443,6 +443,15 @@ fn test_reverse_words() {
     assert_eq!("c b a".to_string(), reverse_words("a b c".to_string()));
     assert_eq!("c b a".to_string(), reverse_words(" a b  c  ".to_string()));
     assert_eq!("blue".to_string(), reverse_words("blue".to_string()));
+    assert_eq!("слово".to_string(), reverse_words("слово".to_string()));
+    assert_eq!(
+        "дело и слово".to_string(),
+        reverse_words("слово и дело".to_string())
+    );
+    assert_eq!(
+        "дело и слово".to_string(),
+        reverse_words("  слово  и дело   ".to_string())
+    );
     assert_eq!(
         "blue is sky the".to_string(),
         reverse_words("the sky is blue".to_string())
@@ -454,5 +463,97 @@ fn test_reverse_words() {
     assert_eq!(
         "world! hello".to_string(),
         reverse_words("  hello world!  ".to_string())
+    );
+}
+
+// example: reverse each word in string
+#[allow(dead_code)]
+fn reverse_each_word(s: String) -> String {
+    if s.len() == 0 {
+        return s;
+    }
+
+    let c = s.chars().collect::<Vec<char>>();
+    let mut v: Vec<char> = Vec::new();
+
+    let mut i = 0;
+    let mut j;
+
+    loop {
+        loop {
+            if i == c.len() - 1 || !c[i].is_whitespace() {
+                break;
+            }
+
+            i += 1;
+        }
+
+        if i == c.len() - 1 && c[i].is_whitespace() {
+            break;
+        }
+
+        if !v.is_empty() {
+            v.push(' ');
+        }
+
+        j = i;
+
+        loop {
+            if j == c.len() - 1 || c[j].is_whitespace() {
+                break;
+            }
+
+            j += 1;
+        }
+
+        if j == c.len() - 1 && !c[j].is_whitespace() {
+            for k in (i..j + 1).rev() {
+                v.push(c[k]);
+            }
+
+            break;
+        }
+
+        for k in (i..j).rev() {
+            v.push(c[k]);
+        }
+
+        i = j;
+    }
+
+    v.iter().collect::<String>()
+}
+
+#[test]
+fn test_reverse_each_word() {
+    assert_eq!("".to_string(), reverse_each_word("".to_string()));
+    assert_eq!("".to_string(), reverse_each_word(" ".to_string()));
+    assert_eq!("".to_string(), reverse_each_word("    ".to_string()));
+    assert_eq!("a b c".to_string(), reverse_each_word("a b c".to_string()));
+    assert_eq!(
+        "a b c".to_string(),
+        reverse_each_word(" a b  c  ".to_string())
+    );
+    assert_eq!("оволс".to_string(), reverse_each_word("слово".to_string()));
+    assert_eq!(
+        "оволс и олед".to_string(),
+        reverse_each_word("слово и дело".to_string())
+    );
+    assert_eq!(
+        "оволс и олед".to_string(),
+        reverse_each_word("   слово  и дело ".to_string())
+    );
+    assert_eq!("eulb".to_string(), reverse_each_word("blue".to_string()));
+    assert_eq!(
+        "eht yks si eulb".to_string(),
+        reverse_each_word("the sky is blue".to_string())
+    );
+    assert_eq!(
+        "a doog elpmaxe".to_string(),
+        reverse_each_word("a good   example".to_string())
+    );
+    assert_eq!(
+        "olleh !dlrow".to_string(),
+        reverse_each_word("  hello world!  ".to_string())
     );
 }
