@@ -376,3 +376,83 @@ fn test_reverse_string() {
     reverse_string(&mut s);
     assert_eq!(s, vec!['o', 'l', 'l', 'e', 'h']);
 }
+
+// example: reverse words order in strings trimming all extra spaces
+#[allow(dead_code)]
+fn reverse_words(s: String) -> String {
+    if s.len() == 0 {
+        return s;
+    }
+
+    let c = s.chars().collect::<Vec<char>>();
+    let mut v: Vec<char> = Vec::new();
+
+    let mut i = c.len() - 1;
+    let mut j;
+
+    loop {
+        loop {
+            if i == 0 || !c[i].is_whitespace() {
+                break;
+            }
+
+            i -= 1;
+        }
+
+        if i == 0 && c[i].is_whitespace() {
+            break;
+        }
+
+        if !v.is_empty() {
+            v.push(' ');
+        }
+
+        j = i;
+
+        loop {
+            if j == 0 || c[j].is_whitespace() {
+                break;
+            }
+
+            j -= 1;
+        }
+
+        if j == 0 && !c[j].is_whitespace() {
+            for k in j..i + 1 {
+                v.push(c[k]);
+            }
+
+            break;
+        }
+
+        for k in j+1..i+1 {
+            v.push(c[k]);
+        }
+
+        i = j;
+    }
+
+    v.iter().collect::<String>()
+}
+
+#[test]
+fn test_reverse_words() {
+    assert_eq!("".to_string(), reverse_words("".to_string()));
+    assert_eq!("".to_string(), reverse_words(" ".to_string()));
+    assert_eq!("".to_string(), reverse_words("    ".to_string()));
+    assert_eq!("c b a".to_string(), reverse_words("a b c".to_string()));
+    assert_eq!("c b a".to_string(), reverse_words(" a b  c  ".to_string()));
+    assert_eq!("blue".to_string(), reverse_words("blue".to_string()));
+    assert_eq!(
+        "blue is sky the".to_string(),
+        reverse_words("the sky is blue".to_string())
+    );
+    assert_eq!(
+        "example good a".to_string(),
+        reverse_words("a good   example".to_string())
+    );
+    assert_eq!(
+        "world! hello".to_string(),
+        reverse_words("  hello world!  ".to_string())
+    );
+}
