@@ -655,3 +655,40 @@ fn test_the_largest_index() {
     assert_eq!(the_largest_index(vec![6, 3, 1, 0]), 0);
     assert_eq!(the_largest_index(vec![1, 3, 1, 7]), 3);
 }
+
+// Example #14
+// Given a sorted array nums, remove the duplicates in-place
+// such that each element appear only once and return the
+// new length. Do not allocate extra space for another array,
+// you must do this by modifying the input array
+// in-place with O(1) extra memory.
+#[allow(dead_code)]
+fn remove_duplicates(nums: &mut Vec<i32>) -> i32 {
+    if nums.is_empty() {
+        return 0;
+    }
+
+    let mut n = 1;
+
+    for i in 0..nums.len() {
+        if nums[n - 1] != nums[i] {
+            nums[n] = nums[i];
+            n += 1;
+        }
+    }
+
+    n as i32
+}
+
+#[test]
+fn test_remove_duplicates() {
+    assert_eq!(0, remove_duplicates(&mut vec![]));
+    assert_eq!(1, remove_duplicates(&mut vec![1]));
+    assert_eq!(2, remove_duplicates(&mut vec![1, 2]));
+    assert_eq!(1, remove_duplicates(&mut vec![1, 1, 1, 1, 1]));
+    assert_eq!(4, remove_duplicates(&mut vec![0, 1, 2, 3]));
+    assert_eq!(
+        5,
+        remove_duplicates(&mut vec![0, 0, 1, 1, 1, 2, 2, 3, 3, 4])
+    );
+}
