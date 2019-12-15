@@ -692,3 +692,68 @@ fn test_remove_duplicates() {
         remove_duplicates(&mut vec![0, 0, 1, 1, 1, 2, 2, 3, 3, 4])
     );
 }
+
+// Example #15
+// Given an array nums, write a function to move all 0's to the end of it
+// while maintaining the relative order of the non-zero elements.
+#[allow(dead_code)]
+fn move_zeroes(nums: &mut Vec<i32>) {
+    let n = nums.len();
+    let mut i = 0;
+    let mut j = 0;
+
+    loop {
+        // search for next zero
+        while i < n {
+            if nums[i] == 0 {
+                break;
+            }
+
+            i += 1;
+        }
+
+        if i == n {
+            break;
+        }
+
+        // search for next non-zero
+        if j < i {
+            j = i + 1;
+        }
+
+        while j < n {
+            if nums[j] != 0 {
+                nums[i] = nums[j];
+                nums[j] = 0;
+                i += 1;
+                j += 1;
+                break;
+            }
+
+            j += 1;
+        }
+
+        if j == n {
+            break;
+        }
+    }
+}
+
+#[test]
+fn test_move_zeroes() {
+    let mut nums: Vec<i32> = vec![];
+    move_zeroes(&mut nums);
+    assert_eq!(vec![] as Vec<i32>, nums);
+
+    let mut nums = vec![1];
+    move_zeroes(&mut nums);
+    assert_eq!(vec![1], nums);
+
+    let mut nums = vec![0, 1, 0, 3, 12];
+    move_zeroes(&mut nums);
+    assert_eq!(vec![1, 3, 12, 0, 0], nums);
+
+    let mut nums = vec![1, 0, 0, 0, 1, 0, 0, 1, 1, 0];
+    move_zeroes(&mut nums);
+    assert_eq!(vec![1, 1, 1, 1, 0, 0, 0, 0, 0, 0], nums);
+}
