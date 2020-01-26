@@ -1,8 +1,5 @@
 use crypto::rc4;
-use stream_cipher::generic_array::typenum::U24;
-use stream_cipher::generic_array::typenum::U32;
-use stream_cipher::generic_array::typenum::U5;
-use stream_cipher::generic_array::typenum::U8;
+use stream_cipher::generic_array::typenum::{UTerm, U16, U2, U24, U3, U32, U4, U5, U8};
 use stream_cipher::generic_array::GenericArray;
 use stream_cipher::NewStreamCipher;
 use stream_cipher::StreamCipher;
@@ -61,11 +58,46 @@ const TEST_N1_4080: [u8; 32] = [
     0xff, 0x25, 0xb5, 0x89, 0x95, 0x99, 0x67, 0x07, 0xe5, 0x1f, 0xbd, 0xf0, 0x8b, 0x34, 0xd8, 0x75,
 ];
 
+/* Test 1_0: empty IV, only KEY */
+
 #[test]
 fn f_test_rc4_key1() {
-    let mut rc4 = rc4::RC4::<U5>::new(
+    let mut rc4 = rc4::RC4::<U5, UTerm>::new(
         &GenericArray::from_slice(&KEY_N1),
         &GenericArray::from_slice(&[]),
+    );
+    let mut buf1: [u8; 4112] = [0x0; 4112];
+    let buf2: [u8; 4112] = [0x0; 4112];
+
+    rc4.encrypt(&mut buf1);
+    assert_eq!(buf1[0..32], TEST_N1_0);
+    assert_eq!(buf1[240..272], TEST_N1_240);
+    assert_eq!(buf1[496..528], TEST_N1_496);
+    assert_eq!(buf1[752..784], TEST_N1_752);
+    assert_eq!(buf1[1008..1040], TEST_N1_1008);
+    assert_eq!(buf1[1520..1552], TEST_N1_1520);
+    assert_eq!(buf1[2032..2064], TEST_N1_2032);
+    assert_eq!(buf1[3056..3088], TEST_N1_3056);
+    assert_eq!(buf1[4080..4112], TEST_N1_4080);
+
+    rc4.decrypt(&mut buf1);
+    for i in 0..buf1.len() {
+        assert_eq!(buf1[i], buf2[i]);
+    }
+}
+
+/* Test 1_1: KEY and IV:
+ * split KEY_1 into KEY_1_1 and IV_1_1 to reuse test vectors
+ */
+
+const KEY_N1_1: [u8; 3] = [0x03, 0x04, 0x05];
+const IV_N1_1: [u8; 2] = [0x01, 0x02];
+
+#[test]
+fn f_test_rc4_key1_iv1() {
+    let mut rc4 = rc4::RC4::<U3, U2>::new(
+        &GenericArray::from_slice(&KEY_N1_1),
+        &GenericArray::from_slice(&IV_N1_1),
     );
     let mut buf1: [u8; 4112] = [0x0; 4112];
     let buf2: [u8; 4112] = [0x0; 4112];
@@ -141,11 +173,51 @@ const TEST_N2_4080: [u8; 32] = [
     0xf3, 0xe4, 0xc0, 0xa2, 0xe0, 0x2d, 0x1d, 0x01, 0xf7, 0xf0, 0xa7, 0x46, 0x18, 0xaf, 0x2b, 0x48,
 ];
 
+/* Test 2_0: empty IV, only KEY */
+
 #[test]
 fn f_test_rc4_key2() {
-    let mut rc4 = rc4::RC4::<U32>::new(
+    let mut rc4 = rc4::RC4::<U32, UTerm>::new(
         &GenericArray::from_slice(&KEY_N2),
         &GenericArray::from_slice(&[]),
+    );
+    let mut buf1: [u8; 4112] = [0x0; 4112];
+    let buf2: [u8; 4112] = [0x0; 4112];
+
+    rc4.encrypt(&mut buf1);
+    assert_eq!(buf1[0..32], TEST_N2_0);
+    assert_eq!(buf1[240..272], TEST_N2_240);
+    assert_eq!(buf1[496..528], TEST_N2_496);
+    assert_eq!(buf1[752..784], TEST_N2_752);
+    assert_eq!(buf1[1008..1040], TEST_N2_1008);
+    assert_eq!(buf1[1520..1552], TEST_N2_1520);
+    assert_eq!(buf1[2032..2064], TEST_N2_2032);
+    assert_eq!(buf1[3056..3088], TEST_N2_3056);
+    assert_eq!(buf1[4080..4112], TEST_N2_4080);
+
+    rc4.decrypt(&mut buf1);
+    for i in 0..buf1.len() {
+        assert_eq!(buf1[i], buf2[i]);
+    }
+}
+
+/* Test 2_1: KEY and IV:
+ * split KEY_2 into KEY_2_1 and IV_2_1 to reuse test vectors
+ */
+
+const KEY_N2_1: [u8; 16] = [
+    0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x20,
+];
+
+const IV_N2_1: [u8; 16] = [
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+];
+
+#[test]
+fn f_test_rc4_key2_iv2() {
+    let mut rc4 = rc4::RC4::<U16, U16>::new(
+        &GenericArray::from_slice(&KEY_N2_1),
+        &GenericArray::from_slice(&IV_N2_1),
     );
     let mut buf1: [u8; 4112] = [0x0; 4112];
     let buf2: [u8; 4112] = [0x0; 4112];
@@ -218,11 +290,46 @@ const TEST_N3_4080: [u8; 32] = [
     0x81, 0x70, 0xcc, 0x3c, 0xcd, 0x92, 0xa6, 0x98, 0x62, 0x1b, 0x93, 0x9d, 0xd3, 0x8f, 0xe7, 0xb9,
 ];
 
+/* Test 3_0: empty IV, only KEY */
+
 #[test]
 fn f_test_rc4_key3() {
-    let mut rc4 = rc4::RC4::<U8>::new(
+    let mut rc4 = rc4::RC4::<U8, UTerm>::new(
         &GenericArray::from_slice(&KEY_N3),
         &GenericArray::from_slice(&[]),
+    );
+    let mut buf1: [u8; 4112] = [0x0; 4112];
+    let buf2: [u8; 4112] = [0x0; 4112];
+
+    rc4.encrypt(&mut buf1);
+    assert_eq!(buf1[0..32], TEST_N3_0);
+    assert_eq!(buf1[240..272], TEST_N3_240);
+    assert_eq!(buf1[496..528], TEST_N3_496);
+    assert_eq!(buf1[752..784], TEST_N3_752);
+    assert_eq!(buf1[1008..1040], TEST_N3_1008);
+    assert_eq!(buf1[1520..1552], TEST_N3_1520);
+    assert_eq!(buf1[2032..2064], TEST_N3_2032);
+    assert_eq!(buf1[3056..3088], TEST_N3_3056);
+    assert_eq!(buf1[4080..4112], TEST_N3_4080);
+
+    rc4.decrypt(&mut buf1);
+    for i in 0..buf1.len() {
+        assert_eq!(buf1[i], buf2[i]);
+    }
+}
+
+/* Test 3_1: KEY and IV:
+ * split KEY_3 into KEY_3_1 and IV_3_1 to reuse test vectors
+ */
+
+const KEY_N3_1: [u8; 4] = [0x32, 0x22, 0x77, 0x2a];
+const IV_N3_1: [u8; 4] = [0x64, 0x19, 0x10, 0x83];
+
+#[test]
+fn f_test_rc4_key3_iv3() {
+    let mut rc4 = rc4::RC4::<U4, U4>::new(
+        &GenericArray::from_slice(&KEY_N3_1),
+        &GenericArray::from_slice(&IV_N3_1),
     );
     let mut buf1: [u8; 4112] = [0x0; 4112];
     let buf2: [u8; 4112] = [0x0; 4112];
@@ -298,11 +405,49 @@ const TEST_N4_4080: [u8; 32] = [
     0xe4, 0xdd, 0x2e, 0x98, 0xd6, 0x96, 0x0f, 0xae, 0x0b, 0x43, 0x54, 0x54, 0x56, 0x74, 0x33, 0x91,
 ];
 
+/* Test 3_0: empty IV, only KEY */
+
 #[test]
 fn f_test_rc4_key4() {
-    let mut rc4 = rc4::RC4::<U24>::new(
+    let mut rc4 = rc4::RC4::<U24, UTerm>::new(
         &GenericArray::from_slice(&KEY_N4),
         &GenericArray::from_slice(&[]),
+    );
+    let mut buf1: [u8; 4112] = [0x0; 4112];
+    let buf2: [u8; 4112] = [0x0; 4112];
+
+    rc4.encrypt(&mut buf1);
+    assert_eq!(buf1[0..32], TEST_N4_0);
+    assert_eq!(buf1[240..272], TEST_N4_240);
+    assert_eq!(buf1[496..528], TEST_N4_496);
+    assert_eq!(buf1[752..784], TEST_N4_752);
+    assert_eq!(buf1[1008..1040], TEST_N4_1008);
+    assert_eq!(buf1[1520..1552], TEST_N4_1520);
+    assert_eq!(buf1[2032..2064], TEST_N4_2032);
+    assert_eq!(buf1[3056..3088], TEST_N4_3056);
+    assert_eq!(buf1[4080..4112], TEST_N4_4080);
+
+    rc4.decrypt(&mut buf1);
+    for i in 0..buf1.len() {
+        assert_eq!(buf1[i], buf2[i]);
+    }
+}
+
+/* Test 4_1: KEY and IV:
+ * split KEY_4 into KEY_4_1 and IV_4_1 to reuse test vectors
+ */
+
+const KEY_N4_1: [u8; 16] = [
+    0xeb, 0xb4, 0x62, 0x27, 0xc6, 0xcc, 0x8b, 0x37, 0x64, 0x19, 0x10, 0x83, 0x32, 0x22, 0x77, 0x2a,
+];
+
+const IV_N4_1: [u8; 8] = [0xc1, 0x09, 0x16, 0x39, 0x08, 0xeb, 0xe5, 0x1d];
+
+#[test]
+fn f_test_rc4_key4_iv4() {
+    let mut rc4 = rc4::RC4::<U16, U8>::new(
+        &GenericArray::from_slice(&KEY_N4_1),
+        &GenericArray::from_slice(&IV_N4_1),
     );
     let mut buf1: [u8; 4112] = [0x0; 4112];
     let buf2: [u8; 4112] = [0x0; 4112];

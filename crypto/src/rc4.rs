@@ -1,4 +1,3 @@
-use stream_cipher::generic_array::typenum::UTerm;
 use stream_cipher::generic_array::ArrayLength;
 use stream_cipher::generic_array::GenericArray;
 use stream_cipher::NewStreamCipher;
@@ -6,24 +5,30 @@ use stream_cipher::StreamCipher;
 
 // RC4
 
-pub struct RC4<N: ArrayLength<u8>> {
-    key: GenericArray<u8, N>,
+pub struct RC4<M: ArrayLength<u8>, N: ArrayLength<u8>> {
+    key: GenericArray<u8, M>,
+    iv: GenericArray<u8, N>,
 }
 
-impl<N> NewStreamCipher for RC4<N>
+impl<M, N> NewStreamCipher for RC4<M, N>
 where
+    M: ArrayLength<u8>,
     N: ArrayLength<u8>,
 {
-    type KeySize = N;
-    type NonceSize = UTerm;
+    type KeySize = M;
+    type NonceSize = N;
 
-    fn new(key: &GenericArray<u8, Self::KeySize>, _: &GenericArray<u8, Self::NonceSize>) -> Self {
-        RC4 { key: key.clone() }
+    fn new(key: &GenericArray<u8, Self::KeySize>, iv: &GenericArray<u8, Self::NonceSize>) -> Self {
+        RC4 {
+            key: key.clone(),
+            iv: iv.clone(),
+        }
     }
 }
 
-impl<N> StreamCipher for RC4<N>
+impl<M, N> StreamCipher for RC4<M, N>
 where
+    M: ArrayLength<u8>,
     N: ArrayLength<u8>,
 {
     fn encrypt(&mut self, data: &mut [u8]) {
@@ -33,6 +38,7 @@ where
         let mut j: u8;
         let mut t: u8;
 
+        kbox.extend_from_slice(self.iv.as_slice());
         kbox.extend_from_slice(self.key.as_slice());
         j = 0;
 
