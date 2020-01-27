@@ -8,3 +8,10 @@ edition = "2018"
 
 [dependencies]
 stream-cipher = "0.3.2"
+
+[dev-dependencies]
+criterion = "0.3.1"
+
+[[bench]]
+name = "bench-rc4"
+harness = false
