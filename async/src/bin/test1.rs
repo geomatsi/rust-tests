@@ -23,6 +23,7 @@ fn main() {
     let f2 = delay("test2");
     let f3 = delay("test3");
     let f4 = delay("test4");
+    let f5 = delay("test5");
 
     println!("block_on:");
     block_on(f1);
@@ -31,5 +32,8 @@ fn main() {
     block_on(async_join(f2, f3));
 
     println!("await:");
-    block_on(async_await(f4));
+    block_on(async { f4.await });
+
+    println!("async fn:");
+    block_on(async_await(f5));
 }
