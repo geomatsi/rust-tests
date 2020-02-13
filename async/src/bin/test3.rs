@@ -5,7 +5,7 @@ use {
         pin::Pin,
         sync::{Arc, Mutex},
         task::{Context, Poll, Waker},
-        thread,
+        thread, time,
     },
 };
 
@@ -13,8 +13,14 @@ pub struct FiboFuture {
     shared_state: Arc<Mutex<SharedState>>,
 }
 
+enum FiboStatus {
+    Inactive,
+    Running,
+    Done,
+}
+
 struct SharedState {
-    done: bool,
+    status: FiboStatus,
     wake: Option<Waker>,
     input: u64,
     result: u64,
@@ -24,12 +30,29 @@ impl Future for FiboFuture {
     type Output = u64;
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut shared_state = self.shared_state.lock().unwrap();
-        if shared_state.done {
-            Poll::Ready(shared_state.result)
-        } else {
-            shared_state.wake = Some(cx.waker().clone());
-            self.start();
-            Poll::Pending
+
+        match shared_state.status {
+            FiboStatus::Inactive => {
+                if shared_state.wake.is_none() {
+                    shared_state.wake = Some(cx.waker().clone());
+                }
+
+                println!("executor: started");
+                self.start();
+                Poll::Pending
+            }
+            FiboStatus::Running => {
+                if shared_state.wake.is_none() {
+                    shared_state.wake = Some(cx.waker().clone());
+                }
+
+                println!("executor: polling");
+                Poll::Pending
+            }
+            FiboStatus::Done => {
+                println!("executor: done");
+                Poll::Ready(shared_state.result)
+            }
         }
     }
 }
@@ -37,7 +60,7 @@ impl Future for FiboFuture {
 impl FiboFuture {
     pub fn create(value: u64) -> Self {
         let shared_state = Arc::new(Mutex::new(SharedState {
-            done: false,
+            status: FiboStatus::Inactive,
             wake: None,
             input: value,
             result: 0,
@@ -47,23 +70,45 @@ impl FiboFuture {
     }
 
     fn start(&self) {
+        let ms = time::Duration::from_millis(1);
         let thread_shared_state = self.shared_state.clone();
+
         thread::spawn(move || {
             let mut shared_state = thread_shared_state.lock().unwrap();
-
+            shared_state.status = FiboStatus::Running;
+            let n = shared_state.input;
             let mut n1 = 0;
             let mut n2 = 1;
 
-            for _ in 0..shared_state.input {
+            // unlock mutex
+            drop(shared_state);
+
+            for _ in 0..n {
                 n2 += n1;
                 n1 = n2 - n1;
+
+                println!("future: running");
+
+                let mut shared_state = thread_shared_state.lock().unwrap();
+
+                if let Some(wake) = shared_state.wake.take() {
+                    wake.wake();
+                }
+
+                // unlock mutex
+                drop(shared_state);
+
+                // wake other threads
+                thread::sleep(ms);
             }
 
+            let mut shared_state = thread_shared_state.lock().unwrap();
+
             shared_state.result = n2;
-            shared_state.done = true;
+            shared_state.status = FiboStatus::Done;
 
             if let Some(wake) = shared_state.wake.take() {
-                wake.wake()
+                wake.wake();
             }
         });
     }
