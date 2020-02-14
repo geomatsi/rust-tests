@@ -14,7 +14,8 @@ pub struct FiboStream {
 }
 
 enum StreamState {
-    Wait,
+    Inactive,
+    Running,
     Done,
     Over,
 }
@@ -32,14 +33,25 @@ impl Stream for FiboStream {
     type Item = u64;
     fn poll_next(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Option<Self::Item>> {
         let mut shared_state = self.shared_state.lock().unwrap();
+
         match shared_state.state {
-            StreamState::Wait => {
-                shared_state.wake = Some(cx.waker().clone());
+            StreamState::Inactive => {
+                if shared_state.wake.is_none() {
+                    shared_state.wake = Some(cx.waker().clone());
+                }
+
                 self.next_value();
                 Poll::Pending
             }
+            StreamState::Running => {
+                if shared_state.wake.is_none() {
+                    shared_state.wake = Some(cx.waker().clone());
+                }
+
+                Poll::Pending
+            }
             StreamState::Done => {
-                shared_state.state = StreamState::Wait;
+                shared_state.state = StreamState::Inactive;
                 Poll::Ready(Some(shared_state.result))
             }
             StreamState::Over => Poll::Ready(None),
@@ -50,7 +62,7 @@ impl Stream for FiboStream {
 impl FiboStream {
     pub fn create(max: usize, delay: u64) -> Self {
         let shared_state = Arc::new(Mutex::new(SharedState {
-            state: StreamState::Wait,
+            state: StreamState::Inactive,
             delay,
             wake: None,
             result: 0,
@@ -61,38 +73,57 @@ impl FiboStream {
         FiboStream { shared_state }
     }
 
-    /* example is intentionally slow: calculates fib(id) each time from the start with extra delay */
+    /* example is intentionally slow: calculates fib(id) each time from the start yielding between each step */
     fn next_value(&self) {
         let thread_shared_state = self.shared_state.clone();
+
         thread::spawn(move || {
+            // lock mutex
             let mut shared_state = thread_shared_state.lock().unwrap();
             let ms = time::Duration::from_millis(shared_state.delay);
 
-            if shared_state.id > shared_state.max {
+            let max = shared_state.max;
+            let id = shared_state.id;
+
+            if id > max {
                 shared_state.state = StreamState::Over;
-            } else {
-                shared_state.result = match shared_state.id {
-                    0 => 1,
-                    1 => 1,
-                    _ => {
-                        let mut n1 = 0;
-                        let mut n2 = 1;
-                        let mut n;
 
-                        for _ in 0..shared_state.id {
-                            n = n1;
-                            n1 = n2;
-                            n2 = n1 + n;
-                            thread::sleep(ms);
-                        }
+                if let Some(wake) = shared_state.wake.take() {
+                    wake.wake()
+                }
 
-                        n2
-                    }
-                };
-
-                shared_state.state = StreamState::Done;
-                shared_state.id += 1;
+                return;
             }
+
+            shared_state.state = StreamState::Running;
+            // unlock mutex before long calculation that has no impact on internal state
+            drop(shared_state);
+
+            let result = match id {
+                0 => 1,
+                1 => 1,
+                _ => {
+                    let mut n1 = 0;
+                    let mut n2 = 1;
+                    let mut n;
+
+                    for _ in 0..id {
+                        n = n1;
+                        n1 = n2;
+                        n2 = n1 + n;
+                        thread::sleep(ms);
+                    }
+
+                    n2
+                }
+            };
+
+            // ready to report completion of computation: lock mutex again
+            let mut shared_state = thread_shared_state.lock().unwrap();
+
+            shared_state.state = StreamState::Done;
+            shared_state.result = result;
+            shared_state.id += 1;
 
             if let Some(wake) = shared_state.wake.take() {
                 wake.wake()
@@ -102,16 +133,17 @@ impl FiboStream {
 }
 
 fn main() {
-    /* simple execution in the loop */
+    /* simple step-by-step execution of stream in the loop */
 
     let mut s = FiboStream::create(10, 0);
 
-    for _ in 0..12 {
+    for i in 0..14 {
         let (res, _) = block_on(async { s.by_ref().into_future().await });
         if let Some(v) = res {
-            println!("-> {}", v);
+            println!("#1: step {} -> {}", i, v);
         } else {
-            println!("done");
+            println!("#1: stream done");
+            break;
         }
     }
 
@@ -120,7 +152,7 @@ fn main() {
     let s = FiboStream::create(10, 0);
 
     block_on(s.for_each(|v| {
-        println!("-> {}", v);
+        println!("#2: for_each -> {}", v);
         future::ready(())
     }));
 
@@ -130,7 +162,7 @@ fn main() {
     let b = FiboStream::create(20, 10);
 
     block_on(stream::select(a, b).for_each(|v| {
-        println!("select -> {}", v);
+        println!("#3: select -> {}", v);
         future::ready(())
     }));
 
@@ -144,15 +176,15 @@ fn main() {
             select! {
                 n = a.next() => {
                     if let Some(v) = n {
-                        println!("a -> {}", v);
+                        println!("#4: a -> {}", v);
                     } else {
-                        println!("a -> done");
+                        println!("#4: a -> done");
                     }
                 },
                 n = b.select_next_some() => {
-                        println!("b -> {:?}", n);
+                        println!("#4: b -> {:?}", n);
                 },
-                default => println!("not yet..."),
+                default =>  {},
                 complete => break,
             }
         }
