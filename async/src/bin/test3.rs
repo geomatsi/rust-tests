@@ -5,7 +5,7 @@ use {
         pin::Pin,
         sync::{Arc, Mutex},
         task::{Context, Poll, Waker},
-        thread, time,
+        thread,
     },
 };
 
@@ -24,10 +24,11 @@ struct SharedState {
     wake: Option<Waker>,
     input: u64,
     result: u64,
+    polled: u64,
 }
 
 impl Future for FiboFuture {
-    type Output = u64;
+    type Output = (u64, u64);
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         let mut shared_state = self.shared_state.lock().unwrap();
 
@@ -37,7 +38,6 @@ impl Future for FiboFuture {
                     shared_state.wake = Some(cx.waker().clone());
                 }
 
-                println!("executor: started");
                 self.start();
                 Poll::Pending
             }
@@ -46,13 +46,10 @@ impl Future for FiboFuture {
                     shared_state.wake = Some(cx.waker().clone());
                 }
 
-                println!("executor: polling");
+                shared_state.polled += 1;
                 Poll::Pending
             }
-            FiboStatus::Done => {
-                println!("executor: done");
-                Poll::Ready(shared_state.result)
-            }
+            FiboStatus::Done => Poll::Ready((shared_state.result, shared_state.polled)),
         }
     }
 }
@@ -64,42 +61,43 @@ impl FiboFuture {
             wake: None,
             input: value,
             result: 0,
+            polled: 0,
         }));
 
         FiboFuture { shared_state }
     }
 
     fn start(&self) {
-        let ms = time::Duration::from_millis(1);
         let thread_shared_state = self.shared_state.clone();
 
         thread::spawn(move || {
+            // lock mutex
             let mut shared_state = thread_shared_state.lock().unwrap();
             shared_state.status = FiboStatus::Running;
+
             let n = shared_state.input;
             let mut n1 = 0;
             let mut n2 = 1;
 
-            // unlock mutex
+            // drop to unlock mutex
             drop(shared_state);
 
             for _ in 0..n {
                 n2 += n1;
                 n1 = n2 - n1;
 
-                println!("future: running");
-
+                // lock mutex
                 let mut shared_state = thread_shared_state.lock().unwrap();
 
                 if let Some(wake) = shared_state.wake.take() {
                     wake.wake();
                 }
 
-                // unlock mutex
+                // drop to unlock mutex
                 drop(shared_state);
 
-                // wake other threads
-                thread::sleep(ms);
+                // the chance for other threads to run
+                thread::yield_now();
             }
 
             let mut shared_state = thread_shared_state.lock().unwrap();
@@ -120,7 +118,7 @@ fn main() {
     for i in 1..10 {
         let f = FiboFuture::create(i);
         let v = block_on(f);
-        println!("fib({}) = {}", i, v);
+        println!("block_on: fib({}) = {} (polled {} times)", i, v.0, v.1);
     }
 
     // join
@@ -129,7 +127,10 @@ fn main() {
     let f2 = FiboFuture::create(10);
 
     let (a, b) = block_on(async { join!(f1, f2) });
-    println!("fib(40) = {}, fib(10) = {}", a, b);
+    println!(
+        "block_on + join: fib(40) = {} (polled {} times), fib(10) = {}, (polled {} times)",
+        a.0, a.1, b.0, b.1
+    );
 
     // select: wait in loop for all completions
 
@@ -142,10 +143,9 @@ fn main() {
     block_on(async {
         loop {
             select! {
-                n = f3 => println!("Fib(70) = {}", n),
-                n = f4 => println!("Fib(50) = {}", n),
-                n = f5 => println!("Fib(30) = {}", n),
-                default => println!("not yet..."),
+                n = f3 => println!("select all: Fib(70) = {} (polled {} times)", n.0, n.1),
+                n = f4 => println!("select all: Fib(50) = {} (polled {} times)", n.0, n.1),
+                n = f5 => println!("select all: Fib(30) = {} (polled {} times)", n.0, n.1),
                 complete => break,
             }
         }
@@ -161,25 +161,25 @@ fn main() {
 
     block_on(async {
         select! {
-            n = f6 => println!("Fib(71) = {}", n),
-            n = f7 => println!("Fib(51) = {}", n),
-            n = f8 => println!("Fib(31) = {}", n),
+            n = f6 => println!("select next: Fib(71) = {} (polled {} times)", n.0, n.1),
+            n = f7 => println!("select next: Fib(51) = {} (polled {} times)", n.0, n.1),
+            n = f8 => println!("select next: Fib(31) = {} (polled {} times)", n.0, n.1),
         }
     });
 
     block_on(async {
         select! {
-            n = f6 => println!("Fib(71) = {}", n),
-            n = f7 => println!("Fib(51) = {}", n),
-            n = f8 => println!("Fib(31) = {}", n),
+            n = f6 => println!("select next: Fib(71) = {} (polled {} times)", n.0, n.1),
+            n = f7 => println!("select next: Fib(51) = {} (polled {} times)", n.0, n.1),
+            n = f8 => println!("select next: Fib(31) = {} (polled {} times)", n.0, n.1),
         }
     });
 
     block_on(async {
         select! {
-            n = f6 => println!("Fib(71) = {}", n),
-            n = f7 => println!("Fib(51) = {}", n),
-            n = f8 => println!("Fib(31) = {}", n),
+            n = f6 => println!("select next: Fib(71) = {} (polled {} times)", n.0, n.1),
+            n = f7 => println!("select next: Fib(51) = {} (polled {} times)", n.0, n.1),
+            n = f8 => println!("select next: Fib(31) = {} (polled {} times)", n.0, n.1),
         }
     });
 }
