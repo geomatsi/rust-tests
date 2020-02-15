@@ -5,5 +5,9 @@ authors = ["Sergey Matyukevich <geomatsi@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-mio = "0.6.16"
-tokio = "0.1.19"
+mio = "0.6"
+futures = "0.3"
+
+[dependencies.tokio]
+version = "0.2"
+features = ["full"]
