@@ -133,7 +133,7 @@ fn main() {
                         unreachable!("Could not find client with token {}", token.0);
                     }
                 }
-                x => unreachable!("Could not find client with token {}", x.0)
+                x => unreachable!("Could not find client with token {}", x.0),
             }
         }
     }
