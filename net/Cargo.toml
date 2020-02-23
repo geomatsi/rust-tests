@@ -7,6 +7,7 @@ edition = "2018"
 [dependencies]
 mio = "0.6"
 futures = "0.3"
+rio = "0.9.2"
 
 [dependencies.tokio]
 version = "0.2"
