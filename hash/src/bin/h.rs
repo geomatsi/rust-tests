@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 fn main() {
     println!("run tests: cargo test");
 }
@@ -177,4 +179,33 @@ fn test_my_hash_map() {
     hm.remove(2);
     assert_eq!(hm.get(1), 2);
     assert_eq!(hm.get(2), -1);
+}
+
+// Example #3: given an array of integers, find if the array contains any duplicates
+//
+// Your function should return true if any value appears at least twice in the array,
+// and it should return false if every element is distinct.
+
+#[allow(dead_code)]
+fn contains_duplicate(nums: Vec<i32>) -> bool {
+    let mut set = HashSet::new();
+
+    for v in nums.iter() {
+        if set.contains(v) {
+            return true;
+        }
+
+        set.insert(v);
+    }
+
+    false
+}
+
+#[test]
+fn test_contains_duplicante() {
+    assert_eq!(contains_duplicate(vec![]), false);
+    assert_eq!(contains_duplicate(vec![1]), false);
+    assert_eq!(contains_duplicate(vec![1, 2, 3, 1]), true);
+    assert_eq!(contains_duplicate(vec![1, 2, 3, 4]), false);
+    assert_eq!(contains_duplicate(vec![1, 1, 1, 3, 3, 4, 3, 2, 4, 2]), true);
 }
