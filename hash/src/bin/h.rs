@@ -209,3 +209,32 @@ fn test_contains_duplicante() {
     assert_eq!(contains_duplicate(vec![1, 2, 3, 4]), false);
     assert_eq!(contains_duplicate(vec![1, 1, 1, 3, 3, 4, 3, 2, 4, 2]), true);
 }
+
+// Example #4
+//
+// Given a non-empty array of integers, every element appears twice except for one. Find that single one.
+// Your algorithm should have a linear runtime complexity.
+
+#[allow(dead_code)]
+fn single_number(nums: Vec<i32>) -> i32 {
+    let mut set = HashSet::new();
+
+    for v in nums.iter() {
+        if set.contains(v) {
+            set.remove(v);
+        } else {
+            set.insert(v);
+        }
+    }
+
+    // input data sanity check
+    assert_eq!(set.len(), 1);
+
+    *set.into_iter().collect::<Vec<&i32>>().pop().unwrap()
+}
+
+#[test]
+fn test_single_number() {
+    assert_eq!(single_number(vec![2, 2, 1]), 1);
+    assert_eq!(single_number(vec![4, 1, 2, 1, 2]), 4);
+}
