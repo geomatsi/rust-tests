@@ -238,3 +238,34 @@ fn test_single_number() {
     assert_eq!(single_number(vec![2, 2, 1]), 1);
     assert_eq!(single_number(vec![4, 1, 2, 1, 2]), 4);
 }
+
+// Example #5
+//
+// Given two arrays, write a function to compute their intersection.
+//
+// Notes:
+// - each element in the result must be unique
+// - the result can be in any order
+
+pub fn intersection(nums1: Vec<i32>, nums2: Vec<i32>) -> Vec<i32> {
+    let s1: HashSet<i32> = nums1.into_iter().collect();
+    let s2: HashSet<i32> = nums2.into_iter().collect();
+
+    s1.intersection(&s2).copied().collect::<Vec<i32>>()
+}
+
+#[test]
+fn test_intersection() {
+    assert_eq!(
+        intersection(vec![1, 2, 2, 1], vec![2, 2])
+            .into_iter()
+            .collect::<HashSet<i32>>(),
+        vec![2].into_iter().collect::<HashSet<i32>>()
+    );
+    assert_eq!(
+        intersection(vec![9, 4, 9, 8, 4], vec![4, 9, 5])
+            .into_iter()
+            .collect::<HashSet<i32>>(),
+        vec![4, 9].into_iter().collect::<HashSet<i32>>()
+    );
+}
