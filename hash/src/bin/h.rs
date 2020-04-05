@@ -269,3 +269,53 @@ fn test_intersection() {
         vec![4, 9].into_iter().collect::<HashSet<i32>>()
     );
 }
+
+// Example #6
+//
+// Write an algorithm to determine if a number is "happy".
+//
+// A happy number is a number defined by the following process: Starting with any positive integer,
+// replace the number by the sum of the squares of its digits, and repeat the process until the
+// number equals 1 (where it will stay), or it loops endlessly in a cycle which does not include 1.
+// Those numbers for which this process ends in 1 are happy numbers.
+
+fn digits(n: i32) -> Vec<i32> {
+    let mut v: Vec<i32> = vec![];
+    let mut n = n;
+
+    loop {
+        if n == 0 {
+            return v;
+        }
+
+        v.push(n - (n / 10) * 10);
+        n /= 10;
+    }
+}
+
+pub fn is_happy(n: i32) -> bool {
+    let mut t: HashSet<i32> = HashSet::new();
+    let mut n = n;
+
+    loop {
+        let digits = digits(n);
+        n = digits.iter().copied().map(|x| x * x).sum();
+
+        if n == 1 {
+            return true;
+        }
+
+        if t.contains(&n) {
+            return false;
+        }
+
+        t.insert(n);
+    }
+}
+
+#[test]
+fn test_happiness() {
+    assert_eq!(is_happy(0), false);
+    assert_eq!(is_happy(1), true);
+    assert_eq!(is_happy(19), true);
+}
