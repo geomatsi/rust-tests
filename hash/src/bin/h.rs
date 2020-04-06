@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 fn main() {
@@ -318,4 +319,35 @@ fn test_happiness() {
     assert_eq!(is_happy(0), false);
     assert_eq!(is_happy(1), true);
     assert_eq!(is_happy(19), true);
+}
+
+// Example #7
+//
+// Given an array of integers, return indices of the two numbers
+// such that they add up to a specific target.
+//
+// You may assume that each input would have exactly one solution,
+// and you may not use the same element twice.
+
+pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
+    let mut map: HashMap<i32, usize> = HashMap::new();
+
+    for (n, v) in nums.iter().enumerate() {
+        for (u, m) in map.iter() {
+            if v + u == target {
+                return vec![*m as i32, n as i32];
+            }
+        }
+
+        map.insert(*v, n);
+    }
+
+    vec![]
+}
+
+#[test]
+fn test_two_sums() {
+    assert_eq!(two_sum(vec![2, 7, 11, 15], 9), [0, 1]);
+    assert_eq!(two_sum(vec![0, 2], 2), [0, 1]);
+    assert_eq!(two_sum(vec![0, 1, 2, 3], 2), [0, 2]);
 }
