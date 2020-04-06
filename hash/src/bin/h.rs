@@ -333,13 +333,12 @@ pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {
     let mut map: HashMap<i32, usize> = HashMap::new();
 
     for (n, v) in nums.iter().enumerate() {
-        for (u, m) in map.iter() {
-            if v + u == target {
-                return vec![*m as i32, n as i32];
+        match map.get(v) {
+            Some(m) => return vec![*m as i32, n as i32],
+            None => {
+                map.insert(target - *v, n);
             }
         }
-
-        map.insert(*v, n);
     }
 
     vec![]
