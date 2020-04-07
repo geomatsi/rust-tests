@@ -350,3 +350,46 @@ fn test_two_sums() {
     assert_eq!(two_sum(vec![0, 2], 2), [0, 1]);
     assert_eq!(two_sum(vec![0, 1, 2, 3], 2), [0, 2]);
 }
+
+// Example #8
+//
+// Two strings are isomorphic if the characters in s can be replaced to get t.
+// Given two strings s and t, determine if they are isomorphic.
+//
+// All occurrences of a character must be replaced with another character while
+// preserving the order of characters. No two characters may map to the same
+// character but a character may map to itself.
+//
+// Note: you may assume both s and t have the same length
+
+fn string_to_set(s: String) -> HashSet<Vec<usize>> {
+    let mut map: HashMap<char, Vec<usize>> = HashMap::new();
+    let mut set: HashSet<Vec<usize>> = HashSet::new();
+
+    for (n, c) in s.chars().enumerate() {
+        map.entry(c).or_insert_with(|| vec![]).push(n);
+    }
+
+    for v in map.values() {
+        set.insert(v.clone());
+    }
+
+    set
+}
+
+pub fn is_isomorphic(s: String, t: String) -> bool {
+    let s1: HashSet<Vec<usize>> = string_to_set(s);
+    let s2: HashSet<Vec<usize>> = string_to_set(t);
+
+    s1 == s2
+}
+
+#[test]
+fn test_isomorphic() {
+    assert_eq!(is_isomorphic("egg".to_string(), "add".to_string()), true);
+    assert_eq!(is_isomorphic("foo".to_string(), "bar".to_string()), false);
+    assert_eq!(
+        is_isomorphic("paper".to_string(), "title".to_string()),
+        true
+    );
+}
