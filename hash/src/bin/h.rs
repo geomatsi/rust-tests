@@ -393,3 +393,86 @@ fn test_isomorphic() {
         true
     );
 }
+
+// Example #9
+//
+// Consider two lists of favorite restaurants represented by strings
+//
+// Find out common interest with the least list index sum. If there
+// is a choice tie between answers, output all of them with no order
+// requirement. You could assume there always exists an answer.
+//
+// Notes:
+// - the length of both lists will be in the range of [1, 1000]
+// - the length of strings in both lists will be in the range of [1, 30]
+// - the index is starting from 0 to the list length minus 1
+// - no duplicates in both lists
+
+pub fn find_restaurant(list1: Vec<String>, list2: Vec<String>) -> Vec<String> {
+    let mut m: HashMap<String, usize> = HashMap::new();
+
+    let mut res: Vec<&str> = vec![];
+    let mut min: usize = 10000;
+
+    for (n, v) in list2.iter().enumerate() {
+        m.insert(v.to_string(), n);
+    }
+
+    for (n, k) in list1.iter().enumerate() {
+        if let Some(m) = m.get(k) {
+            match n + m {
+                s if s < min => {
+                    res.clear();
+                    res.push(k);
+                    min = s;
+                }
+                s if s == min => {
+                    res.push(k);
+                }
+                _ => {}
+            };
+        }
+    }
+
+    res.iter()
+        .map(|s| (*s).to_string())
+        .collect::<Vec<String>>()
+}
+
+#[test]
+fn test_restraunts() {
+    let a = ["Shogun", "Tapioca Express", "Burger King", "KFC"]
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    let b = [
+        "Piatti",
+        "The Grill at Torrey Pines",
+        "Hungry Hunter Steakhouse",
+        "Shogun",
+    ]
+    .iter()
+    .map(|x| x.to_string())
+    .collect::<Vec<String>>();
+    let c = ["Shogun"]
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+
+    assert_eq!(find_restaurant(a, b), c);
+
+    let a = ["Shogun", "Tapioca Express", "Burger King", "KFC"]
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    let b = ["KFC", "Shogun", "Burger King"]
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+    let c = ["Shogun"]
+        .iter()
+        .map(|x| x.to_string())
+        .collect::<Vec<String>>();
+
+    assert_eq!(find_restaurant(a, b), c);
+}
