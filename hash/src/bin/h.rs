@@ -476,3 +476,44 @@ fn test_restraunts() {
 
     assert_eq!(find_restaurant(a, b), c);
 }
+
+// Example #10
+//
+// Given a string, find the first non-repeating character in it and return it's index.
+// If it doesn't exist, return -1
+//
+// Note
+// You may assume the string contain only lowercase letters.
+
+pub fn first_uniq_char(s: String) -> i32 {
+    let mut m: HashMap<char, usize> = HashMap::new();
+    let mut n: Vec<usize> = vec![0; s.len()];
+
+    for (p, c) in s.chars().enumerate() {
+        match m.get(&c) {
+            Some(q) => {
+                n[*q] = 1;
+                n[p] = 1;
+            }
+            None => {
+                m.insert(c, p);
+            }
+        }
+    }
+
+    for (i, v) in n.iter().enumerate() {
+        if *v == 0 {
+            return i as i32;
+        }
+    }
+
+    -1
+}
+
+#[test]
+fn test_uniq_char() {
+    assert_eq!(first_uniq_char("leetcode".to_string()), 0);
+    assert_eq!(first_uniq_char("loveleetcode".to_string()), 2);
+    assert_eq!(first_uniq_char("abab".to_string()), -1);
+    assert_eq!(first_uniq_char("abba".to_string()), -1);
+}
