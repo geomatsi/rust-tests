@@ -517,3 +517,36 @@ fn test_uniq_char() {
     assert_eq!(first_uniq_char("abab".to_string()), -1);
     assert_eq!(first_uniq_char("abba".to_string()), -1);
 }
+
+// Example #11
+//
+// Given two arrays, write a function to compute their intersection.
+//
+// Each element in the result should appear as many times as it shows in both arrays.
+// The result can be in any order.
+
+pub fn intersect(nums1: Vec<i32>, nums2: Vec<i32>) -> Vec<i32> {
+    let mut map: HashMap<i32, usize> = HashMap::new();
+    let mut res: Vec<i32> = vec![];
+
+    for k in nums1.iter() {
+        map.entry(*k).and_modify(|e| *e += 1).or_insert(1);
+    }
+
+    for k in nums2.iter() {
+        map.entry(*k).and_modify(|e| {
+            if *e > 0 {
+                *e -= 1;
+                res.push(*k);
+            }
+        });
+    }
+
+    res
+}
+
+#[test]
+fn test_intersect() {
+    assert_eq!(intersect(vec![1, 2, 2, 1], vec![2, 2]), vec![2, 2]);
+    assert_eq!(intersect(vec![4, 9, 5], vec![9, 4, 9, 8, 4]), vec![9, 4]);
+}
