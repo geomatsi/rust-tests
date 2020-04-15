@@ -550,3 +550,33 @@ fn test_intersect() {
     assert_eq!(intersect(vec![1, 2, 2, 1], vec![2, 2]), vec![2, 2]);
     assert_eq!(intersect(vec![4, 9, 5], vec![9, 4, 9, 8, 4]), vec![9, 4]);
 }
+
+// Example #12
+//
+// Given an array of integers and an integer k, find out whether there are two distinct indices
+// i and j in the array such that nums[i] = nums[j] and the absolute difference between
+// i and j is at most k.
+
+pub fn contains_nearby_duplicate(nums: Vec<i32>, k: i32) -> bool {
+    let mut m: HashMap<i32, usize> = HashMap::new();
+
+    for (i, v) in nums.iter().enumerate() {
+        if let Some(j) = m.get_mut(v) {
+            if (i - *j) as i32 <= k {
+                return true;
+            }
+            *j = i;
+        } else {
+            m.insert(*v, i);
+        }
+    }
+
+    false
+}
+
+#[test]
+fn test_nearby_duplicate() {
+    assert_eq!(contains_nearby_duplicate(vec![1, 2, 3, 1], 3), true);
+    assert_eq!(contains_nearby_duplicate(vec![1, 0, 1, 1], 1), true);
+    assert_eq!(contains_nearby_duplicate(vec![1, 2, 3, 1, 2, 3], 2), false);
+}
