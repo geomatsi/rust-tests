@@ -580,3 +580,50 @@ fn test_nearby_duplicate() {
     assert_eq!(contains_nearby_duplicate(vec![1, 0, 1, 1], 1), true);
     assert_eq!(contains_nearby_duplicate(vec![1, 2, 3, 1, 2, 3], 2), false);
 }
+
+// Example #13
+//
+// Given an array of strings, group anagrams together.
+
+pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {
+    let mut map: HashMap<Vec<char>, Vec<String>> = HashMap::new();
+    let mut res: Vec<Vec<String>> = vec![];
+
+    for s in strs {
+        let mut ch: Vec<char> = s.chars().collect::<Vec<char>>();
+        ch.sort();
+        map.entry(ch).or_insert_with(Vec::new).push(s);
+    }
+
+    for v in map.values() {
+        res.push(v.to_vec());
+    }
+
+    res
+}
+
+#[test]
+fn test_group_anagrams() {
+    let strs: Vec<String> = vec!["eat", "tea", "tan", "ate", "nat", "bat"]
+        .into_iter()
+        .map(|x| x.to_string())
+        .collect();
+    let mut angs: Vec<Vec<String>> = vec![
+        vec!["eat", "tea", "ate"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect(),
+        vec!["tan", "nat"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect(),
+        vec!["bat"].into_iter().map(|x| x.to_string()).collect(),
+    ];
+
+    let mut strs = group_anagrams(strs);
+
+    strs.sort();
+    angs.sort();
+
+    assert_eq!(strs, angs);
+}
