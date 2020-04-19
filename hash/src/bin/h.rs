@@ -627,3 +627,95 @@ fn test_group_anagrams() {
 
     assert_eq!(strs, angs);
 }
+
+// Example #14
+//
+// Determine if a 9x9 Sudoku board is valid. Only the filled cells
+// need to be validated according to the following rules:
+// - each row must contain the digits 1-9 without repetition
+// - each column must contain the digits 1-9 without repetition
+// - each of the 9 3x3 sub-boxes of the grid must contain the digits 1-9 without repetition
+
+pub fn is_valid_sudoku(board: Vec<Vec<char>>) -> bool {
+    let mut r_map: HashMap<(char, usize), i32> = HashMap::new();
+    let mut c_map: HashMap<(char, usize), i32> = HashMap::new();
+    let mut t_map: HashMap<(char, usize), i32> = HashMap::new();
+
+    for (i, row) in board.iter().enumerate() {
+        for (j, &c) in row.iter().enumerate() {
+            if c == '.' {
+                continue;
+            }
+
+            match r_map.get(&(c, i)) {
+                Some(_) => return false,
+                None => {
+                    r_map.insert((c, i), 1);
+                }
+            }
+
+            match c_map.get(&(c, j)) {
+                Some(_) => return false,
+                None => {
+                    c_map.insert((c, j), 1);
+                }
+            }
+
+            let k = 3 * (i / 3) + (j / 3);
+
+            match t_map.get(&(c, k)) {
+                Some(_) => return false,
+                None => {
+                    t_map.insert((c, k), 1);
+                }
+            }
+        }
+    }
+
+    true
+}
+
+#[test]
+fn test_sudoku() {
+    let s = vec![
+        vec!['5', '3', '.', '.', '7', '.', '.', '.', '.'],
+        vec!['6', '.', '.', '1', '9', '5', '.', '.', '.'],
+        vec!['.', '9', '8', '.', '.', '.', '.', '6', '.'],
+        vec!['8', '.', '.', '.', '6', '.', '.', '.', '3'],
+        vec!['4', '.', '.', '8', '.', '3', '.', '.', '1'],
+        vec!['7', '.', '.', '.', '2', '.', '.', '.', '6'],
+        vec!['.', '6', '.', '.', '.', '.', '2', '8', '.'],
+        vec!['.', '.', '.', '4', '1', '9', '.', '.', '5'],
+        vec!['.', '.', '.', '.', '8', '.', '.', '7', '9'],
+    ];
+
+    assert_eq!(is_valid_sudoku(s), true);
+
+    let s = vec![
+        vec!['8', '3', '.', '.', '7', '.', '.', '.', '.'],
+        vec!['6', '.', '.', '1', '9', '5', '.', '.', '.'],
+        vec!['.', '9', '8', '.', '.', '.', '.', '6', '.'],
+        vec!['8', '.', '.', '.', '6', '.', '.', '.', '3'],
+        vec!['4', '.', '.', '8', '.', '3', '.', '.', '1'],
+        vec!['7', '.', '.', '.', '2', '.', '.', '.', '6'],
+        vec!['.', '6', '.', '.', '.', '.', '2', '8', '.'],
+        vec!['.', '.', '.', '4', '1', '9', '.', '.', '5'],
+        vec!['.', '.', '.', '.', '8', '.', '.', '7', '9'],
+    ];
+
+    assert_eq!(is_valid_sudoku(s), false);
+
+    let s = vec![
+        vec!['.', '.', '4', '.', '.', '.', '6', '3', '.'],
+        vec!['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        vec!['5', '.', '.', '.', '.', '.', '.', '9', '.'],
+        vec!['.', '.', '.', '5', '6', '.', '.', '.', '.'],
+        vec!['4', '.', '3', '.', '.', '.', '.', '.', '1'],
+        vec!['.', '.', '.', '7', '.', '.', '.', '.', '.'],
+        vec!['.', '.', '.', '5', '.', '.', '.', '.', '.'],
+        vec!['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+        vec!['.', '.', '.', '.', '.', '.', '.', '.', '.'],
+    ];
+
+    assert_eq!(is_valid_sudoku(s), false);
+}
