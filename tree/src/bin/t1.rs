@@ -34,49 +34,43 @@ fn traverse_recursive(root: &Rc<RefCell<TreeNode>>, path: String) -> Vec<String>
     [lp, vec![format!("{}:{}", root.borrow().val, path)], rp].concat()
 }
 
-fn subtrees_recursive(root: &Rc<RefCell<TreeNode>>) -> (Vec<Vec<String>>, Vec<Vec<String>>) {
-    let mut ms: Vec<Vec<String>> = vec![];
+fn subtrees_recursive(root: &Rc<RefCell<TreeNode>>) -> Vec<(Vec<String>, Rc<RefCell<TreeNode>>)> {
+    let mut subs: Vec<(Vec<String>, Rc<RefCell<TreeNode>>)> = vec![];
 
     // left: (deeper subtrees, top subtrees)
-    let (lo, lt) = match root.borrow().left {
+    let mut lt = match root.borrow().left {
         Some(ref left) => subtrees_recursive(left),
-        None => (vec![], vec![]),
+        None => vec![],
     };
 
     // right: (deeper subtrees, top subtrees)
-    let (ro, rt) = match root.borrow().right {
+    let mut rt = match root.borrow().right {
         Some(ref right) => subtrees_recursive(right),
-        None => (vec![], vec![]),
+        None => vec![],
     };
 
-    for e in lt.iter() {
-        let mut x: Vec<String> = vec![];
+    let mut sub: Vec<String> = vec![];
 
-        for m in e.iter() {
-            x.push(m.clone() + "L");
+    if let Some(e) = lt.last() {
+        for m in e.0.iter() {
+            sub.push(m.clone() + "L");
         }
-
-        x.push(format!("{}:", root.borrow().val));
-        ms.push(x);
     }
 
-    for e in rt.iter() {
-        let mut x: Vec<String> = vec![];
+    sub.push(format!("{}:", root.borrow().val));
 
-        for m in e.iter() {
-            x.push(m.clone() + "R");
+    if let Some(e) = rt.last() {
+        for m in e.0.iter() {
+            sub.push(m.clone() + "R");
         }
-
-        x.push(format!("{}:", root.borrow().val));
-        ms.push(x);
     }
 
-    if ms.is_empty() {
-        ms.push(vec![format!("{}:", root.borrow().val)]);
-    }
+    subs.append(&mut lt);
+    subs.append(&mut rt);
+    subs.push((sub, Rc::clone(&root)));
 
-    // return: (deeper subtrees, top subtrees)
-    ([lo, lt, ro, rt].concat(), ms)
+    // return: last is always top subtree
+    subs
 }
 
 fn main() {
@@ -90,31 +84,95 @@ fn main() {
     //         4   7
     //
 
-    let mut root = TreeNode::new(1);
-    let mut l = TreeNode::new(2);
+    let root = TreeNode::new(1);
+    let proot = Rc::new(RefCell::new(root));
+
+    let l = TreeNode::new(2);
+    let pl = Rc::new(RefCell::new(l));
+
     let ll = TreeNode::new(4);
-    let mut r = TreeNode::new(3);
+    let pll = Rc::new(RefCell::new(ll));
+
+    let r = TreeNode::new(3);
+    let pr = Rc::new(RefCell::new(r));
+
     let rll = TreeNode::new(4);
+    let prll = Rc::new(RefCell::new(rll));
+
     let rlr = TreeNode::new(7);
-    let mut rl = TreeNode::new(2);
+    let prlr = Rc::new(RefCell::new(rlr));
+
+    let rl = TreeNode::new(2);
+    let prl = Rc::new(RefCell::new(rl));
+
     let rr = TreeNode::new(4);
+    let prr = Rc::new(RefCell::new(rr));
 
-    l.left = Some(Rc::new(RefCell::new(ll)));
-    rl.left = Some(Rc::new(RefCell::new(rll)));
-    rl.right = Some(Rc::new(RefCell::new(rlr)));
-    r.left = Some(Rc::new(RefCell::new(rl)));
-    r.right = Some(Rc::new(RefCell::new(rr)));
-    root.left = Some(Rc::new(RefCell::new(l)));
-    root.right = Some(Rc::new(RefCell::new(r)));
+    pl.borrow_mut().left = Some(Rc::clone(&pll));
+    prl.borrow_mut().left = Some(Rc::clone(&prll));
+    prl.borrow_mut().right = Some(Rc::clone(&prlr));
+    pr.borrow_mut().left = Some(Rc::clone(&prl));
+    pr.borrow_mut().right = Some(Rc::clone(&prr));
+    proot.borrow_mut().left = Some(Rc::clone(&pl));
+    proot.borrow_mut().right = Some(Rc::clone(&pr));
 
-    let xroot = Rc::new(RefCell::new(root));
+    let s = traverse_recursive(&proot, "".to_string());
+    println!("Traverse: {:?}", s);
 
-    let s = traverse_recursive(&xroot, "".to_string());
-    println!("{:?}", s);
+    let s = traverse_recursive(&Rc::clone(&proot), "".to_string());
+    println!("Traverse: {:?}", s);
 
-    let s = traverse_recursive(&Rc::clone(&xroot), "".to_string());
-    println!("{:?}", s);
+    let s = subtrees_recursive(&Rc::clone(&proot));
+    for e in s.iter() {
+        println!("{:?} <- {}", e.0, e.1.as_ref().borrow().val);
+    }
 
-    let s = subtrees_recursive(&Rc::clone(&xroot));
-    println!("{:?}", s);
+    // Create Tree:
+    //           0
+    //          / \
+    //         1   3
+    //        /     \
+    //       2       4
+    //              / \
+    //             5   6
+    //
+
+    let root = TreeNode::new(0);
+    let proot = Rc::new(RefCell::new(root));
+
+    let l = TreeNode::new(1);
+    let pl = Rc::new(RefCell::new(l));
+
+    let ll = TreeNode::new(2);
+    let pll = Rc::new(RefCell::new(ll));
+
+    let r = TreeNode::new(3);
+    let pr = Rc::new(RefCell::new(r));
+
+    let rr = TreeNode::new(4);
+    let prr = Rc::new(RefCell::new(rr));
+
+    let rrl = TreeNode::new(5);
+    let prrl = Rc::new(RefCell::new(rrl));
+
+    let rrr = TreeNode::new(6);
+    let prrr = Rc::new(RefCell::new(rrr));
+
+    proot.borrow_mut().left = Some(Rc::clone(&pl));
+    proot.borrow_mut().right = Some(Rc::clone(&pr));
+    pl.borrow_mut().left = Some(Rc::clone(&pll));
+    pr.borrow_mut().right = Some(Rc::clone(&prr));
+    prr.borrow_mut().right = Some(Rc::clone(&prrr));
+    prr.borrow_mut().left = Some(Rc::clone(&prrl));
+
+    let s = traverse_recursive(&proot, "".to_string());
+    println!("Traverse: {:?}", s);
+
+    let s = traverse_recursive(&Rc::clone(&proot), "".to_string());
+    println!("Traverse: {:?}", s);
+
+    let s = subtrees_recursive(&Rc::clone(&proot));
+    for e in s.iter() {
+        println!("{:?} <- {}", e.0, e.1.as_ref().borrow().val);
+    }
 }
