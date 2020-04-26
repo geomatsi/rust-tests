@@ -747,65 +747,45 @@ impl TreeNode {
     }
 }
 
-fn subtrees_recursive(root: &Rc<RefCell<TreeNode>>) -> Vec<(Vec<String>, Rc<RefCell<TreeNode>>)> {
-    let mut subs: Vec<(Vec<String>, Rc<RefCell<TreeNode>>)> = vec![];
+fn subtrees_recursive(
+    root: &Rc<RefCell<TreeNode>>,
+    res: &mut Vec<Option<Rc<RefCell<TreeNode>>>>,
+    map: &mut HashMap<String, i8>,
+) -> String {
+    let mut sub: String = "".to_string();
 
-    // left: (deeper subtrees, top subtrees)
-    let mut lt = match root.borrow().left {
-        Some(ref left) => subtrees_recursive(left),
-        None => vec![],
-    };
-
-    // right: (deeper subtrees, top subtrees)
-    let mut rt = match root.borrow().right {
-        Some(ref right) => subtrees_recursive(right),
-        None => vec![],
-    };
-
-    let mut sub: Vec<String> = vec![];
-
-    if let Some(e) = lt.last() {
-        for m in e.0.iter() {
-            sub.push(m.clone() + "L");
-        }
+    if let Some(left) = &root.borrow().left {
+        sub += &subtrees_recursive(&left, res, map);
+        sub += "L";
     }
 
-    sub.push(format!("{}:", root.borrow().val));
+    sub += &format!(":{}:", root.borrow().val);
 
-    if let Some(e) = rt.last() {
-        for m in e.0.iter() {
-            sub.push(m.clone() + "R");
-        }
+    if let Some(right) = &root.borrow().right {
+        sub += &subtrees_recursive(&right, res, map);
+        sub += "R";
     }
 
-    subs.append(&mut lt);
-    subs.append(&mut rt);
-    subs.push((sub, Rc::clone(&root)));
+    map.entry(sub.clone())
+        .and_modify(|v| {
+            if *v == 1 {
+                res.push(Some(Rc::clone(&root)));
+                *v = 2;
+            }
+        })
+        .or_insert(1);
 
-    // return: last is always top subtree
-    subs
+    sub
 }
 
 pub fn find_duplicate_subtrees(
     root: Option<Rc<RefCell<TreeNode>>>,
 ) -> Vec<Option<Rc<RefCell<TreeNode>>>> {
-    let mut map: HashMap<Vec<String>, Vec<Rc<RefCell<TreeNode>>>> = HashMap::new();
+    let mut map: HashMap<String, i8> = HashMap::new();
     let mut res: Vec<Option<Rc<RefCell<TreeNode>>>> = vec![];
 
     if let Some(r) = root {
-        let subs = subtrees_recursive(&Rc::clone(&r));
-
-        for e in subs.iter() {
-            map.entry(e.0.clone())
-                .and_modify(|v| v.push(Rc::clone(&e.1)))
-                .or_insert_with(|| vec![Rc::clone(&e.1)]);
-        }
-
-        for v in map.values() {
-            if v.len() > 1 {
-                res.push(Some(Rc::clone(v.last().unwrap())));
-            }
-        }
+        subtrees_recursive(&Rc::clone(&r), &mut res, &mut map);
     }
 
     res
@@ -922,6 +902,54 @@ fn test_subtrees() {
     res.push(Rc::clone(&pll));
     res.push(Rc::clone(&prrr));
     res.push(Rc::clone(&prrl));
+
+    let subs: Vec<Option<Rc<RefCell<TreeNode>>>> = find_duplicate_subtrees(Some(Rc::clone(&proot)));
+    for e in subs.iter() {
+        if let Some(v) = e {
+            assert_eq!(res.contains(v), true);
+        }
+    }
+
+    // Create Tree:
+    //           0
+    //          / \
+    //         0   0
+    //        /     \
+    //       0       0
+    //                \
+    //                 0
+    //
+
+    let root = TreeNode::new(0);
+    let proot = Rc::new(RefCell::new(root));
+
+    let l = TreeNode::new(0);
+    let pl = Rc::new(RefCell::new(l));
+
+    let ll = TreeNode::new(0);
+    let pll = Rc::new(RefCell::new(ll));
+
+    let r = TreeNode::new(0);
+    let pr = Rc::new(RefCell::new(r));
+
+    let rr = TreeNode::new(0);
+    let prr = Rc::new(RefCell::new(rr));
+
+    let rrr = TreeNode::new(0);
+    let prrr = Rc::new(RefCell::new(rrr));
+
+    proot.borrow_mut().left = Some(Rc::clone(&pl));
+    proot.borrow_mut().right = Some(Rc::clone(&pr));
+    pl.borrow_mut().left = Some(Rc::clone(&pll));
+    pr.borrow_mut().right = Some(Rc::clone(&prr));
+    prr.borrow_mut().right = Some(Rc::clone(&prrr));
+
+    let mut res: Vec<Rc<RefCell<TreeNode>>> = vec![];
+
+    // subtree:
+    //   0
+    res.push(Rc::clone(&pll));
+    res.push(Rc::clone(&prrr));
 
     let subs: Vec<Option<Rc<RefCell<TreeNode>>>> = find_duplicate_subtrees(Some(Rc::clone(&proot)));
     for e in subs.iter() {
