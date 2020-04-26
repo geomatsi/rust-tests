@@ -35,21 +35,12 @@ fn traverse_recursive(root: &Rc<RefCell<TreeNode>>, path: String) -> Vec<String>
 }
 
 fn subtrees_recursive(root: &Rc<RefCell<TreeNode>>) -> Vec<(Vec<String>, Rc<RefCell<TreeNode>>)> {
-    let mut subs: Vec<(Vec<String>, Rc<RefCell<TreeNode>>)> = vec![];
+    let mut sub: Vec<String> = vec![];
 
-    // left: (deeper subtrees, top subtrees)
-    let mut lt = match root.borrow().left {
+    let lt = match root.borrow().left {
         Some(ref left) => subtrees_recursive(left),
         None => vec![],
     };
-
-    // right: (deeper subtrees, top subtrees)
-    let mut rt = match root.borrow().right {
-        Some(ref right) => subtrees_recursive(right),
-        None => vec![],
-    };
-
-    let mut sub: Vec<String> = vec![];
 
     if let Some(e) = lt.last() {
         for m in e.0.iter() {
@@ -59,18 +50,19 @@ fn subtrees_recursive(root: &Rc<RefCell<TreeNode>>) -> Vec<(Vec<String>, Rc<RefC
 
     sub.push(format!("{}:", root.borrow().val));
 
+    let rt = match root.borrow().right {
+        Some(ref right) => subtrees_recursive(right),
+        None => vec![],
+    };
+
     if let Some(e) = rt.last() {
         for m in e.0.iter() {
             sub.push(m.clone() + "R");
         }
     }
 
-    subs.append(&mut lt);
-    subs.append(&mut rt);
-    subs.push((sub, Rc::clone(&root)));
-
     // return: last is always top subtree
-    subs
+    [lt, rt, vec![(sub, Rc::clone(&root))]].concat()
 }
 
 fn main() {
