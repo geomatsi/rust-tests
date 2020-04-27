@@ -958,3 +958,42 @@ fn test_subtrees() {
         }
     }
 }
+
+// Example #16
+//
+// You're given strings J representing the types of stones that are jewels, and S representing the
+// stones you have.  Each character in S is a type of stone you have.  You want to know how many of
+// the stones you have are also jewels.
+//
+// The letters in J are guaranteed distinct, and all characters in J and S are letters. Letters are
+// case sensitive, so "a" is considered a different type of stone from "A".
+//
+// Notes:
+// 1. S and J will consist of letters and have length at most 50.
+// 2. The characters in J are distinct.
+
+pub fn num_jewels_in_stones(j: String, s: String) -> i32 {
+    let mut jewels: HashSet<char> = HashSet::new();
+    let mut ret: i32 = 0;
+
+    for c in j.chars() {
+        jewels.insert(c);
+    }
+
+    for c in s.chars() {
+        if jewels.contains(&c) {
+            ret += 1;
+        }
+    }
+
+    ret
+}
+
+#[test]
+fn test_jewels() {
+    assert_eq!(
+        num_jewels_in_stones("aA".to_string(), "aAAbbbb".to_string()),
+        3
+    );
+    assert_eq!(num_jewels_in_stones("z".to_string(), "ZZ".to_string()), 0);
+}
