@@ -997,3 +997,56 @@ fn test_jewels() {
     );
     assert_eq!(num_jewels_in_stones("z".to_string(), "ZZ".to_string()), 0);
 }
+
+// Example #17
+//
+// Given a string, find the length of the longest substring without repeating characters.
+
+pub fn length_of_longest_substring(s: String) -> i32 {
+    let c: Vec<char> = s.chars().collect::<Vec<char>>();
+    let mut s: HashMap<char, usize> = HashMap::new();
+    let mut res: usize = 0;
+    let mut len: usize = 0;
+    let mut k: usize = 0;
+    let mut p: usize;
+
+    for j in 0..c.len() {
+
+        if !s.contains_key(&c[j]) {
+            s.insert(c[j], j);
+            len += 1;
+            continue;
+        }
+
+        if res < len {
+            res = len;
+        }
+
+        p = *s.get(&c[j]).unwrap();
+        
+        if res > c.len() - p {
+            break;
+        }
+
+        for e in c.iter().take(p + 1).skip(k) {
+            s.remove(e);
+        }
+
+        s.insert(c[j], j);
+        len -= p - k;
+        k = p + 1;
+    }
+
+    if res < len {
+        res = len;
+    }
+
+    res as i32
+}
+
+#[test]
+fn test_longest_substrings() {
+    assert_eq!(length_of_longest_substring("abcabcbb".to_string()), 3);
+    assert_eq!(length_of_longest_substring("pwwkew".to_string()), 3);
+    assert_eq!(length_of_longest_substring("bbbbb".to_string()), 1);
+}
