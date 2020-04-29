@@ -1011,7 +1011,6 @@ pub fn length_of_longest_substring(s: String) -> i32 {
     let mut p: usize;
 
     for j in 0..c.len() {
-
         if !s.contains_key(&c[j]) {
             s.insert(c[j], j);
             len += 1;
@@ -1023,7 +1022,7 @@ pub fn length_of_longest_substring(s: String) -> i32 {
         }
 
         p = *s.get(&c[j]).unwrap();
-        
+
         if res > c.len() - p {
             break;
         }
@@ -1049,4 +1048,83 @@ fn test_longest_substrings() {
     assert_eq!(length_of_longest_substring("abcabcbb".to_string()), 3);
     assert_eq!(length_of_longest_substring("pwwkew".to_string()), 3);
     assert_eq!(length_of_longest_substring("bbbbb".to_string()), 1);
+}
+
+// Example #18
+// Given four lists A, B, C, D of integer values, compute how many tuples (i, j, k, l)
+// there are such that A[i] + B[j] + C[k] + D[l] is zero.
+//
+// To make problem a bit easier:
+// - all A, B, C, D have same length of N where 0 ≤ N ≤ 500
+// - all integers are in the range of -2^28 to 2^28 - 1 and the result is guaranteed to be at most 2^31 - 1
+
+pub fn four_sum_count(a: Vec<i32>, b: Vec<i32>, c: Vec<i32>, d: Vec<i32>) -> i32 {
+    let mut m1: HashMap<i32, i32> = HashMap::new();
+    let mut m2: HashMap<i32, i32> = HashMap::new();
+    let mut res: i32 = 0;
+
+    for ea in &a {
+        for eb in &b {
+            *m1.entry(ea + eb).or_insert_with(|| 0) += 1;
+        }
+    }
+
+    for ec in &c {
+        for ed in &d {
+            *m2.entry(ec + ed).or_insert_with(|| 0) += 1;
+        }
+    }
+
+    for (k1, v1) in m1.iter() {
+        if let Some(v2) = m2.get(&-k1) {
+            res += v1 * v2;
+        }
+    }
+
+    res
+}
+
+#[test]
+fn test_4sum() {
+    assert_eq!(
+        four_sum_count(vec![1, 2], vec![-2, -1], vec![-1, 2], vec![0, 2]),
+        2
+    );
+
+    assert_eq!(
+        four_sum_count(
+            vec![-1, 1, 1, 1, -1],
+            vec![0, -1, -1, 0, 1],
+            vec![-1, -1, 1, -1, -1],
+            vec![0, 1, 0, -1, -1]
+        ),
+        132
+    );
+
+    let a = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    let b = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    let c = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+    let d = vec![
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    ];
+
+    assert_eq!(four_sum_count(a, b, c, d), 100000000);
 }
