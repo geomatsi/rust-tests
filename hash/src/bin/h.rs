@@ -1128,3 +1128,34 @@ fn test_4sum() {
 
     assert_eq!(four_sum_count(a, b, c, d), 100000000);
 }
+
+// Example #19
+// Given a non-empty array of integers, return the k most frequent elements.
+//
+// Notes:
+//   - you may assume k is always valid, 1 ≤ k ≤ number of unique elements
+//   - your algorithm's time complexity must be better than O(n log n), where n is the array's size
+//   - it's guaranteed that the answer is unique, in other words the set of the top k frequent elements is unique.
+//   - you can return the answer in any order.
+
+pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {
+    let mut m: HashMap<i32, i32> = HashMap::new();
+
+    for n in &nums {
+        *m.entry(*n).or_insert_with(|| 0) += 1;
+    }
+
+    let mut res = m.iter().map(|(a, b)| (*a, *b)).collect::<Vec<(i32, i32)>>();
+
+    res.sort_by(|a, b| b.1.cmp(&a.1));
+    res.iter()
+        .take(k as usize)
+        .map(|(v, _)| *v)
+        .collect::<Vec<i32>>()
+}
+
+#[test]
+fn test_top_k() {
+    assert_eq!(top_k_frequent(vec![1, 1, 1, 2, 2, 3], 2), vec![1, 2]);
+    assert_eq!(top_k_frequent(vec![1], 1), vec![1]);
+}
