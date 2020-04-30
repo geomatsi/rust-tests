@@ -1,3 +1,6 @@
+extern crate rand;
+
+use rand::Rng;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -1158,4 +1161,112 @@ pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {
 fn test_top_k() {
     assert_eq!(top_k_frequent(vec![1, 1, 1, 2, 2, 3], 2), vec![1, 2]);
     assert_eq!(top_k_frequent(vec![1], 1), vec![1]);
+}
+
+// Example #20
+//
+// Design a data structure that supports all following operations in average O(1) time.
+//   - insert(val): Inserts an item val to the set if not already present
+//   - remove(val): Removes an item val from the set if present
+//   - get_random: Returns a random element from current set of elements. Each element must have the same probability of being returned
+
+struct RandomizedSet {
+    pub map: HashMap<i32, usize>,
+    pub val: Vec<i32>,
+    rand: rand::prelude::ThreadRng,
+}
+
+#[allow(dead_code)]
+impl RandomizedSet {
+    fn new() -> Self {
+        RandomizedSet {
+            rand: rand::thread_rng(),
+            map: HashMap::new(),
+            val: vec![],
+        }
+    }
+
+    fn insert(&mut self, val: i32) -> bool {
+        if self.map.contains_key(&val) {
+            return false;
+        }
+
+        let idx: usize = self.val.len();
+
+        self.map.insert(val, idx);
+        self.val.push(val);
+
+        true
+    }
+
+    fn remove(&mut self, val: i32) -> bool {
+        if let Some(idx) = self.map.remove(&val) {
+            let v = self.val.pop().unwrap();
+
+            if !self.val.is_empty() && v != val {
+                self.map.insert(v, idx);
+                self.val[idx] = v;
+            }
+
+            return true;
+        }
+
+        false
+    }
+
+    fn get_random(&mut self) -> i32 {
+        let idx: usize = self.rand.gen_range(0, self.val.len());
+        self.val[idx]
+    }
+}
+
+#[test]
+fn test_random_set() {
+    let mut rnd: RandomizedSet = RandomizedSet::new();
+
+    // empty state
+
+    assert_eq!(rnd.insert(1), true);
+    assert_eq!(rnd.remove(2), false);
+    assert_eq!(rnd.insert(2), true);
+
+    // random: 1 or 2
+    match rnd.get_random() {
+        1 => assert!(true),
+        2 => assert!(true),
+        _ => assert!(false),
+    };
+
+    assert_eq!(rnd.remove(1), true);
+    assert_eq!(rnd.insert(2), false);
+    assert_eq!(rnd.get_random(), 2);
+    assert_eq!(rnd.remove(2), true);
+
+    // empty state
+
+    assert_eq!(rnd.insert(0), true);
+    assert_eq!(rnd.insert(1), true);
+    assert_eq!(rnd.remove(0), true);
+    assert_eq!(rnd.insert(2), true);
+    assert_eq!(rnd.remove(1), true);
+    assert_eq!(rnd.get_random(), 2);
+    assert_eq!(rnd.remove(1), false);
+    assert_eq!(rnd.remove(2), true);
+    assert_eq!(rnd.remove(2), false);
+    assert_eq!(rnd.remove(2), false);
+    assert_eq!(rnd.remove(1), false);
+
+    // empty state
+
+    for e in 0..10 {
+        assert_eq!(rnd.insert(e), true);
+    }
+
+    for _ in 0..1000 {
+        assert_eq!(rnd.get_random() < 10000, true);
+    }
+
+    for e in 0..10 {
+        assert_eq!(rnd.remove(e), true);
+    }
 }
