@@ -111,10 +111,10 @@ fn main() {
     let s = traverse_recursive(&proot, "".to_string());
     println!("Traverse: {:?}", s);
 
-    let s = traverse_recursive(&Rc::clone(&proot), "".to_string());
+    let s = traverse_recursive(&proot, "".to_string());
     println!("Traverse: {:?}", s);
 
-    let s = subtrees_recursive(&Rc::clone(&proot));
+    let s = subtrees_recursive(&proot);
     for e in s.iter() {
         println!("{:?} <- {}", e.0, e.1.as_ref().borrow().val);
     }
@@ -160,10 +160,55 @@ fn main() {
     let s = traverse_recursive(&proot, "".to_string());
     println!("Traverse: {:?}", s);
 
-    let s = traverse_recursive(&Rc::clone(&proot), "".to_string());
+    let s = traverse_recursive(&proot, "".to_string());
     println!("Traverse: {:?}", s);
 
-    let s = subtrees_recursive(&Rc::clone(&proot));
+    let s = subtrees_recursive(&proot);
+    for e in s.iter() {
+        println!("{:?} <- {}", e.0, e.1.as_ref().borrow().val);
+    }
+
+    // Create Tree:
+    //           0
+    //          / \
+    //         0   0
+    //        /     \
+    //       0       0
+    //                \
+    //                 0
+    //
+
+    let root = TreeNode::new(0);
+    let proot = Rc::new(RefCell::new(root));
+
+    let l = TreeNode::new(0);
+    let pl = Rc::new(RefCell::new(l));
+
+    let ll = TreeNode::new(0);
+    let pll = Rc::new(RefCell::new(ll));
+
+    let r = TreeNode::new(0);
+    let pr = Rc::new(RefCell::new(r));
+
+    let rr = TreeNode::new(0);
+    let prr = Rc::new(RefCell::new(rr));
+
+    let rrr = TreeNode::new(0);
+    let prrr = Rc::new(RefCell::new(rrr));
+
+    proot.borrow_mut().left = Some(Rc::clone(&pl));
+    proot.borrow_mut().right = Some(Rc::clone(&pr));
+    pl.borrow_mut().left = Some(Rc::clone(&pll));
+    pr.borrow_mut().right = Some(Rc::clone(&prr));
+    prr.borrow_mut().right = Some(Rc::clone(&prrr));
+
+    let s = traverse_recursive(&proot, "".to_string());
+    println!("Traverse: {:?}", s);
+
+    let s = traverse_recursive(&proot, "".to_string());
+    println!("Traverse: {:?}", s);
+
+    let s = subtrees_recursive(&proot);
     for e in s.iter() {
         println!("{:?} <- {}", e.0, e.1.as_ref().borrow().val);
     }
