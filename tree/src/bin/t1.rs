@@ -254,12 +254,33 @@ pub fn inorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<
     }
 }
 
+pub fn postorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    if let Some(ref root) = proot {
+        let ls: Vec<i32> = if let Some(ref left) = root.borrow().left {
+            postorder_traversal_recursive(Some(left.clone()))
+        } else {
+            vec![]
+        };
+
+        let rs: Vec<i32> = if let Some(ref right) = root.borrow().right {
+            postorder_traversal_recursive(Some(right.clone()))
+        } else {
+            vec![]
+        };
+
+        [ls, rs, vec![root.borrow().val]].concat()
+    } else {
+        vec![]
+    }
+}
+
 #[test]
-fn test_preorder_traversal() {
+fn test_tree_traversal() {
     // Test tree: empty
     {
         assert_eq!(preorder_traversal_recursive(None), vec![]);
         assert_eq!(inorder_traversal_recursive(None), vec![]);
+        assert_eq!(postorder_traversal_recursive(None), vec![]);
     }
 
     // Test tree:
@@ -275,6 +296,10 @@ fn test_preorder_traversal() {
         );
         assert_eq!(
             inorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1]
+        );
+        assert_eq!(
+            postorder_traversal_recursive(Some(Rc::clone(&proot))),
             vec![1]
         );
     }
@@ -307,6 +332,10 @@ fn test_preorder_traversal() {
         assert_eq!(
             inorder_traversal_recursive(Some(Rc::clone(&proot))),
             vec![1, 3, 2]
+        );
+        assert_eq!(
+            postorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![3, 2, 1]
         );
     }
 
@@ -361,10 +390,13 @@ fn test_preorder_traversal() {
             preorder_traversal_recursive(Some(Rc::clone(&proot))),
             vec![6, 2, 1, 4, 3, 5, 7, 9, 8]
         );
-
         assert_eq!(
             inorder_traversal_recursive(Some(Rc::clone(&proot))),
             vec![1, 2, 3, 4, 5, 6, 7, 8, 9]
+        );
+        assert_eq!(
+            postorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1, 3, 5, 4, 2, 8, 9, 7, 6]
         );
     }
 }
