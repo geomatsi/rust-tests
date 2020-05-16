@@ -234,11 +234,32 @@ pub fn preorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec
     }
 }
 
+pub fn inorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    if let Some(ref root) = proot {
+        let ls: Vec<i32> = if let Some(ref left) = root.borrow().left {
+            inorder_traversal_recursive(Some(left.clone()))
+        } else {
+            vec![]
+        };
+
+        let rs: Vec<i32> = if let Some(ref right) = root.borrow().right {
+            inorder_traversal_recursive(Some(right.clone()))
+        } else {
+            vec![]
+        };
+
+        [ls, vec![root.borrow().val], rs].concat()
+    } else {
+        vec![]
+    }
+}
+
 #[test]
 fn test_preorder_traversal() {
     // Test tree: empty
     {
         assert_eq!(preorder_traversal_recursive(None), vec![]);
+        assert_eq!(inorder_traversal_recursive(None), vec![]);
     }
 
     // Test tree:
@@ -248,7 +269,14 @@ fn test_preorder_traversal() {
         let root = TreeNode::new(1);
         let proot = Rc::new(RefCell::new(root));
 
-        assert_eq!(preorder_traversal_recursive(Some(proot)), vec![1]);
+        assert_eq!(
+            preorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1]
+        );
+        assert_eq!(
+            inorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1]
+        );
     }
 
     // Test tree:
@@ -272,7 +300,14 @@ fn test_preorder_traversal() {
         proot.borrow_mut().right = Some(Rc::clone(&pr));
         pr.borrow_mut().left = Some(Rc::clone(&prl));
 
-        assert_eq!(preorder_traversal_recursive(Some(proot)), vec![1, 2, 3]);
+        assert_eq!(
+            preorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1, 2, 3]
+        );
+        assert_eq!(
+            inorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1, 3, 2]
+        );
     }
 
     // Test tree:
@@ -323,8 +358,13 @@ fn test_preorder_traversal() {
         prr.borrow_mut().left = Some(Rc::clone(&prrl));
 
         assert_eq!(
-            preorder_traversal_recursive(Some(proot)),
+            preorder_traversal_recursive(Some(Rc::clone(&proot))),
             vec![6, 2, 1, 4, 3, 5, 7, 9, 8]
+        );
+
+        assert_eq!(
+            inorder_traversal_recursive(Some(Rc::clone(&proot))),
+            vec![1, 2, 3, 4, 5, 6, 7, 8, 9]
         );
     }
 }
