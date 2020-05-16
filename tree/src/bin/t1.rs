@@ -213,3 +213,118 @@ fn main() {
         println!("{:?} <- {}", e.0, e.1.as_ref().borrow().val);
     }
 }
+
+pub fn preorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
+    if let Some(ref root) = proot {
+        let ls: Vec<i32> = if let Some(ref left) = root.borrow().left {
+            preorder_traversal_recursive(Some(left.clone()))
+        } else {
+            vec![]
+        };
+
+        let rs: Vec<i32> = if let Some(ref right) = root.borrow().right {
+            preorder_traversal_recursive(Some(right.clone()))
+        } else {
+            vec![]
+        };
+
+        [vec![root.borrow().val], ls, rs].concat()
+    } else {
+        vec![]
+    }
+}
+
+#[test]
+fn test_preorder_traversal() {
+    // Test tree: empty
+    {
+        assert_eq!(preorder_traversal_recursive(None), vec![]);
+    }
+
+    // Test tree:
+    //          1
+
+    {
+        let root = TreeNode::new(1);
+        let proot = Rc::new(RefCell::new(root));
+
+        assert_eq!(preorder_traversal_recursive(Some(proot)), vec![1]);
+    }
+
+    // Test tree:
+    //           1
+    //            \
+    //             2
+    //            /
+    //           3
+    //
+
+    {
+        let root = TreeNode::new(1);
+        let proot = Rc::new(RefCell::new(root));
+
+        let r = TreeNode::new(2);
+        let pr = Rc::new(RefCell::new(r));
+
+        let rl = TreeNode::new(3);
+        let prl = Rc::new(RefCell::new(rl));
+
+        proot.borrow_mut().right = Some(Rc::clone(&pr));
+        pr.borrow_mut().left = Some(Rc::clone(&prl));
+
+        assert_eq!(preorder_traversal_recursive(Some(proot)), vec![1, 2, 3]);
+    }
+
+    // Test tree:
+    //            6
+    //          /   \
+    //         2     7
+    //        / \     \
+    //       1   4     9
+    //          / \   /
+    //         3   5 8
+    //
+
+    {
+        let root = TreeNode::new(6);
+        let proot = Rc::new(RefCell::new(root));
+
+        let l = TreeNode::new(2);
+        let pl = Rc::new(RefCell::new(l));
+
+        let r = TreeNode::new(7);
+        let pr = Rc::new(RefCell::new(r));
+
+        let ll = TreeNode::new(1);
+        let pll = Rc::new(RefCell::new(ll));
+
+        let lr = TreeNode::new(4);
+        let plr = Rc::new(RefCell::new(lr));
+
+        let rr = TreeNode::new(9);
+        let prr = Rc::new(RefCell::new(rr));
+
+        let lrl = TreeNode::new(3);
+        let plrl = Rc::new(RefCell::new(lrl));
+
+        let lrr = TreeNode::new(5);
+        let plrr = Rc::new(RefCell::new(lrr));
+
+        let rrl = TreeNode::new(8);
+        let prrl = Rc::new(RefCell::new(rrl));
+
+        proot.borrow_mut().left = Some(Rc::clone(&pl));
+        proot.borrow_mut().right = Some(Rc::clone(&pr));
+        pl.borrow_mut().left = Some(Rc::clone(&pll));
+        pl.borrow_mut().right = Some(Rc::clone(&plr));
+        pr.borrow_mut().right = Some(Rc::clone(&prr));
+        plr.borrow_mut().left = Some(Rc::clone(&plrl));
+        plr.borrow_mut().right = Some(Rc::clone(&plrr));
+        prr.borrow_mut().left = Some(Rc::clone(&prrl));
+
+        assert_eq!(
+            preorder_traversal_recursive(Some(proot)),
+            vec![6, 2, 1, 4, 3, 5, 7, 9, 8]
+        );
+    }
+}
