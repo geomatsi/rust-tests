@@ -217,13 +217,13 @@ fn main() {
 pub fn preorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
     if let Some(ref root) = proot {
         let ls: Vec<i32> = if let Some(ref left) = root.borrow().left {
-            preorder_traversal_recursive(Some(left.clone()))
+            preorder_traversal_recursive(Some(Rc::clone(left)))
         } else {
             vec![]
         };
 
         let rs: Vec<i32> = if let Some(ref right) = root.borrow().right {
-            preorder_traversal_recursive(Some(right.clone()))
+            preorder_traversal_recursive(Some(Rc::clone(right)))
         } else {
             vec![]
         };
@@ -237,13 +237,13 @@ pub fn preorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec
 pub fn inorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
     if let Some(ref root) = proot {
         let ls: Vec<i32> = if let Some(ref left) = root.borrow().left {
-            inorder_traversal_recursive(Some(left.clone()))
+            inorder_traversal_recursive(Some(Rc::clone(left)))
         } else {
             vec![]
         };
 
         let rs: Vec<i32> = if let Some(ref right) = root.borrow().right {
-            inorder_traversal_recursive(Some(right.clone()))
+            inorder_traversal_recursive(Some(Rc::clone(right)))
         } else {
             vec![]
         };
@@ -257,13 +257,13 @@ pub fn inorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<
 pub fn postorder_traversal_recursive(proot: Option<Rc<RefCell<TreeNode>>>) -> Vec<i32> {
     if let Some(ref root) = proot {
         let ls: Vec<i32> = if let Some(ref left) = root.borrow().left {
-            postorder_traversal_recursive(Some(left.clone()))
+            postorder_traversal_recursive(Some(Rc::clone(left)))
         } else {
             vec![]
         };
 
         let rs: Vec<i32> = if let Some(ref right) = root.borrow().right {
-            postorder_traversal_recursive(Some(right.clone()))
+            postorder_traversal_recursive(Some(Rc::clone(right)))
         } else {
             vec![]
         };
